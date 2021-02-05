@@ -1,0 +1,52 @@
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>socket.io app</title>
+    <style>
+      * {
+          font-size: 20px;
+        }
+    </style>
+</head>
+
+<body>
+   <ul id="messages"></ul>
+    <form id="form" action="">
+      <input id="input" autocomplete="off" /><button>Send</button>
+    </form>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io();
+
+
+      socket.on('connect', () => {
+        socket.emit('connection_info', "Nowy użytkownik pojawił sie na czacie.");
+      })
+      socket.on('disconnect', () => {
+        socket.emit('connection_info', "Użytkownik WYSZEDŁ z chatu.");
+      })
+      
+
+      var messages = document.getElementById('messages');
+      var form = document.getElementById('form');
+      var input = document.getElementById('input');
+
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (input.value) {
+          socket.emit('chat_message', input.value);
+          input.value = '';
+        }
+      });
+
+      socket.on('chat_message', function(msg) {
+        var item = document.createElement('li');
+        item.textContent = msg;
+        messages.appendChild(item);
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+    </script>
+</html> {% endcomment %}
