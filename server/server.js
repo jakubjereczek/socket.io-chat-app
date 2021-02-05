@@ -10,14 +10,23 @@ const options = {
 };
 const io = require('socket.io')(server, options);
 
+const data = require('./data');
+
 io.on('connection', socket => {
     console.log('a user connected');
 
-    socket.on('message from client', (msg) => {
-        console.log("msg", msg)
+    socket.on('name', (name) => {
+
+        console.log('wysylam', socket.id, name);
+        const user = {
+            id: socket.id,
+            name
+        }
+        data.push(user);
+        socket.emit('name-success', user);
     });
 
-    socket.emit('message from server', "message z serwera do klientów");
+    //socket.emit('message from server', "message z serwera do klientów");
 });
 
 

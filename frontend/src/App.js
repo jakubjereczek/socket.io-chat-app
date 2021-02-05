@@ -1,32 +1,33 @@
 import './App.css';
-import React, { useEffect } from 'react';
-import { io } from "socket.io-client";
+import React from 'react';
+// import { io } from "socket.io-client";
+import { ThemeProvider } from "styled-components";
+
+import Colors from './utils/colors';
+import { GlobalStyle } from './utils/globalStyles.js'
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+import { Name } from './components';
+
+import { useSocket } from './contexts/SocketContext';
+
+toast.configure();
 
 function App() {
-  // dla tej samej domeny
-  //const socket = io();
 
-  // dla innej domeny niz serwer
-  const options = {
-    withCredentials: true,
-    transports: ['websocket', 'polling', 'flashsocket']
-  };
-
-  useEffect(() => {
-    const socket = io("http://127.0.0.1:80", options);
-
-    socket.emit('message from client', "message od klienta do serwera");
-
-    socket.on('message from server', (msg) => {
-      console.log('msg', msg);
-    })
-
-  })
+  const socketContext = useSocket();
+  const user = socketContext.user;
 
   return (
-    <div className="App">
-      Hello world
-    </div>
+    <ThemeProvider theme={Colors}>
+      <GlobalStyle />
+      {!user && <Name />}
+
+      <div className="App">
+        Hello world
+        </div>
+    </ThemeProvider>
   );
 }
 
