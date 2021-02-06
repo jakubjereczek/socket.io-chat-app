@@ -10,25 +10,16 @@ const options = {
 };
 const io = require('socket.io')(server, options);
 
-const data = require('./data');
+// handlers
+const registerRoomsHandlers = require('./events/roomsHandler');
+const registerUsersHandlers = require('./events/usersHandler');
 
-io.on('connection', socket => {
-    console.log('a user connected');
+const onConnection = (socket) => {
+    registerRoomsHandlers(io, socket);
+    registerUsersHandlers(io, socket);
+}
 
-    socket.on('name', (name) => {
-
-        console.log('wysylam', socket.id, name);
-        const user = {
-            id: socket.id,
-            name
-        }
-        data.push(user);
-        socket.emit('name-success', user);
-    });
-
-    //socket.emit('message from server', "message z serwera do klientów");
-});
-
+io.on("connection", onConnection);
 
 server.listen(port, "127.0.0.1", () => {
     console.log(`Server is listening at http://127.0.0.1:${port}`)

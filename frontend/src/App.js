@@ -7,8 +7,9 @@ import Colors from './utils/colors';
 import { GlobalStyle } from './utils/globalStyles.js'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { MainWrapper } from './components/Styles.css'
 
-import { Name } from './components';
+import { Name, Profil, RoomsList } from './components';
 
 import { useSocket } from './contexts/SocketContext';
 
@@ -19,14 +20,22 @@ function App() {
   const socketContext = useSocket();
   const user = socketContext.user;
 
+  console.log('socketContext.user', socketContext.user);
+
   return (
     <ThemeProvider theme={Colors}>
-      <GlobalStyle />
-      {!user && <Name />}
-
-      <div className="App">
-        Hello world
-        </div>
+      <div class="app">
+        <GlobalStyle />
+        {!user && <Name />}
+        <MainWrapper>
+          {user && (
+            <React.Fragment>
+              <Profil />
+              <RoomsList />
+            </React.Fragment>
+          )}
+        </MainWrapper>
+      </div>
     </ThemeProvider>
   );
 }

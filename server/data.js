@@ -1,4 +1,7 @@
-const data = [];
+const users = [];
+const rooms = [];
 
-
-module.exports = data;
+module.exports = {
+    users,
+    rooms
+};
