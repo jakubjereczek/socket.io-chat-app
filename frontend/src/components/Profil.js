@@ -3,18 +3,33 @@ import { Wrapper, HeaderWrapper, DescribeWrapper } from './Profil.css';
 import { Title, Input, Button, TitleBold, TitleThin } from './Styles.css'
 import { useSocket } from '../contexts/SocketContext';
 
-const Profil = () => {
+const Profil = ({ changeActivePopup, changePopUpContent }) => {
 
     const socketContext = useSocket();
     const user = socketContext.user;
 
     const buttonHandler = () => {
+        // Treść popupa
+        const context = (
+            <React.Fragment>
+                <Title small>Name</Title>
+                <Input />
+                <Button>Create a room</Button>
+            </React.Fragment>
+        );
+
+        const popupContext = {
+            title: "Add new room",
+            context
+        }
+        changePopUpContent(popupContext)
+        changeActivePopup();
         const room = {
             id: user.id,
             created_by: user.name,
             created_time: Date.now()
         }
-        socketContext.socket.emit('rooms:create', room);
+        //socketContext.socket.emit('rooms:create', room);
     }
 
     return (

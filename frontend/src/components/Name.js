@@ -5,7 +5,7 @@ import { TitleBold, TitleThin, Title, Input, Button } from './Styles.css'
 import { useSocket } from '../contexts/SocketContext';
 import { toast } from 'react-toastify';
 
-const Name = () => {
+const Name = (props) => {
 
     const socketContext = useSocket();
     const socket = socketContext.socket;

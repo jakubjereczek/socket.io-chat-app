@@ -20,6 +20,10 @@ export const GlobalStyle = createGlobalStyle`
         display: flex;
         justify-content: center;
     }
+    div.app.blur {
+        filter: blur(3px);
+        opacity: 0.7;
+    }
 
     .break-word {
         word-break: break-word;    
