@@ -79,13 +79,14 @@ export const MessageText = styled.div`
     flex-grow: 0;
     /* flex-grow:1; */
     word-wrap: break-word;
-
+    
     @media (max-width: 900px) {
         max-width: 300px;
     }
     @media (max-width: 576px) {
         max-width: 200px;
     }
+    
 
 `
 

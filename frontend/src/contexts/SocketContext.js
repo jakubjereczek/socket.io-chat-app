@@ -23,11 +23,7 @@ export const SocketProvider = ({ children }) => {
         console.log(socket);
         setSocket(socket);
 
-        // socket.emit('message from client', "message od klienta do serwera");
-
-        // socket.on('message from server', (msg) => {
-        //     console.log('msg', msg);
-        // })
+        return () => socket.disconnect();
     }, []);
 
     const values = {

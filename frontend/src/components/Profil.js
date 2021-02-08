@@ -3,30 +3,32 @@ import { Wrapper, HeaderWrapper, DescribeWrapper } from './Profil.css';
 import { Title, Input, Button, TitleBold, TitleThin } from './Styles.css'
 import { useSocket } from '../contexts/SocketContext';
 import { toast } from 'react-toastify';
-
+import { useHistory } from "react-router-dom";
 
 const Profil = ({ changeActivePopup, changePopUpContent, isActivePopup }) => {
 
     const socketContext = useSocket();
     const socket = socketContext.socket;
     const user = socketContext.user;
+    const history = useHistory();
 
     useEffect(() => {
         socket.on('rooms:create-success', (room) => {
-            const { users, created_by, id, name } = room;
-            const user = {
-                id: users[0],
+            const { created_by, id, name } = room;
+            const userObject = {
+                id: user.id,
                 name: created_by,
                 room: id,
             }
-            socketContext.setUser(user);
+            socketContext.setUser(userObject);
             toast.success("🦄 You has created a room: " + name);
 
             // unvisible
             changeActivePopup(false);
             // przejscie do chatu 
-            // room/id
-            // to do
+            socket.emit('rooms:join', id, user.id);
+            history.push("/room/" + id);
+
         })
 
     }, [socket]);
@@ -34,7 +36,6 @@ const Profil = ({ changeActivePopup, changePopUpContent, isActivePopup }) => {
 
     const nameRoom = React.createRef();
     const createRoom = () => {
-
         console.log('user.room ', user.room);
         if (user.room !== "") {
             return toast.warn("🦄 You already have a room.");
@@ -50,7 +51,8 @@ const Profil = ({ changeActivePopup, changePopUpContent, isActivePopup }) => {
             private: false,
             created_by: user.name,
             created_time: Date.now(),
-            users: [user.id]
+            // users: [user.id]
+            users: []
         }
         socketContext.socket.emit('rooms:create', room);
     }
