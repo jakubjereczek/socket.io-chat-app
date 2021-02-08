@@ -1,5 +1,6 @@
 const app = require('./app');
 const port = process.env.port || 80;
+const data = require('./data');
 
 const server = require('http').createServer(app);
 const options = {
@@ -17,6 +18,7 @@ const registerUsersHandlers = require('./events/usersHandler');
 const onConnection = (socket) => {
     registerRoomsHandlers(io, socket);
     registerUsersHandlers(io, socket);
+    console.log(' %s sockets connected', io.engine.clientsCount);
 }
 
 io.on("connection", onConnection);

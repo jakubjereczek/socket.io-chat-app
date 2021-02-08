@@ -7,7 +7,7 @@ const Popup = ({ children, changeActivePopup, title }) => {
     return (
         <Wrapper>
             <Container>
-                <ReturnButton onClick={() => changeActivePopup()}><span><FaAngleDoubleUp /></span></ReturnButton>
+                <ReturnButton onClick={() => changeActivePopup(false)}><span><FaAngleDoubleUp /></span></ReturnButton>
                 <TitlePopup>{title}</TitlePopup>
                 <Content>
                     {children}

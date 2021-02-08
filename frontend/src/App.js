@@ -1,5 +1,11 @@
 import './App.css';
 import React, { useState, useMemo } from 'react';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route
+} from "react-router-dom";
+
 // import { io } from "socket.io-client";
 import { ThemeProvider } from "styled-components";
 import { IconContext } from "react-icons"
@@ -10,7 +16,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { MainWrapper } from './components/Styles.css'
 
-import { Name, Profil, RoomsList, Popup } from './components';
+import { Name, Profil, RoomsList, Popup, Room } from './components';
 
 import { useSocket } from './contexts/SocketContext';
 
@@ -33,7 +39,7 @@ function App() {
       notActive: "app"
     },
   }
-  const changeActivePopup = () => isActivePopup ? setIsActivePopup(false) : setIsActivePopup(true);
+  const changeActivePopup = (bool) => setIsActivePopup(bool);
   const changePopUpContent = (txt) => setPopupContent(txt);
   const pContent = useMemo(() => {
     return popupContent;
@@ -45,15 +51,30 @@ function App() {
         {isActivePopup ? <Popup changeActivePopup={changeActivePopup} title={pContent.title}>{pContent.context}</Popup> : null}
         <div className={isActivePopup ? popupClass.app.active : popupClass.app.notActive}>
           <GlobalStyle />
-          {!user && <Name />}
-          <MainWrapper>
-            {user && (
-              <React.Fragment>
-                <Profil changeActivePopup={changeActivePopup} changePopUpContent={changePopUpContent} />
-                <RoomsList />
-              </React.Fragment>
-            )}
-          </MainWrapper>
+          <Router>
+            <Switch>
+              <Route exact path="/" >
+                {!user && <Name />}
+                <MainWrapper>
+                  {user && (
+                    <React.Fragment>
+                      <Profil changeActivePopup={changeActivePopup} changePopUpContent={changePopUpContent} />
+                      <RoomsList />
+                    </React.Fragment>
+                  )}
+                </MainWrapper>
+              </Route>
+              <Route path="/room/:id">
+                <MainWrapper>
+                  <Room />
+                </MainWrapper>
+              </Route>
+              <Route>
+                {/* to do */}
+                Not found
+              </Route>
+            </Switch>
+          </Router>
         </div>
       </IconContext.Provider>
     </ThemeProvider>

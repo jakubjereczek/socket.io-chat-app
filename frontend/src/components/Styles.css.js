@@ -7,8 +7,9 @@ export const Title = styled.p`
 `
 
 export const Input = styled.input`    
+    box-sizing: border-box;
     width: 100%;
-    padding: 15px 10px;
+    padding: 5px 10px;
     font-size: 3rem;
     border: 1px solid #808080;
     border-radius: 10px;
@@ -16,7 +17,19 @@ export const Input = styled.input`
     color: ${props => props.theme.dark_light}
 `
 
+export const Textarea = styled.textarea`    
+    box-sizing: border-box;
+    width: 100%;
+    padding: 5px 10px;
+    font-size: 1.2rem;
+    border: 2px solid #808080;
+    border-radius: 10px;
+    margin: 5px 0;
+    color: #808080;
+`
+
 export const Button = styled.button`
+
     width: 100%;
     background-color: ${props => props.gray ? "#808080" : props => props.theme.dark_light};
     padding: 10px 10px;

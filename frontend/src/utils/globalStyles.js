@@ -21,8 +21,9 @@ export const GlobalStyle = createGlobalStyle`
         justify-content: center;
     }
     div.app.blur {
-        filter: blur(3px);
-        opacity: 0.7;
+        filter: blur(2px);
+        opacity: 0.5;
+        overflow: hidden;
     }
 
     .break-word {

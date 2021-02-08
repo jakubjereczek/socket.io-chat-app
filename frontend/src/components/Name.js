@@ -38,7 +38,7 @@ const Name = (props) => {
     return (
         <Wrapper>
             <WrapperInside>
-                <TitleBold>Chat</TitleBold>
+                <TitleBold>ChatApp 🦄</TitleBold>
                 <TitleThin>Real-time chat application using framework socket.io</TitleThin>
                 <Title>Join the chat</Title>
                 <Input onChange={inputHandler} />
