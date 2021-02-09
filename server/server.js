@@ -43,20 +43,22 @@ const onConnection = (socket) => {
                 let findedRoom = roomsCopy.find(room => room.id === roomId);
                 findedRoom.users = findedRoom.users.filter(user => user != socketId);
 
-
                 if (findedRoom.users.length === 0) {
                     let roomsWithoutThisRoom = roomsCopy.find(room => room !== findedRoom);
                     if (roomsWithoutThisRoom === undefined) {
-                        roomsWithoutThisRoom = [];
+                        data.rooms = [];
+                    } else {
+                        data.rooms = [roomsWithoutThisRoom];
                     }
-                    data.rooms = roomsWithoutThisRoom;
                     console.log('pokoj zostal usuniety poniewaz nikogo w nim nie ma');
                     io.sockets.emit('rooms:refresh-rooms', data.rooms);
                 } else {
                     data.rooms = roomsCopy;
                 }
-                console.log('data.room', data.rooms);
+                io.to(findedRoom.id).emit('rooms:get-rooms', findedRoom);
 
+                // refresh po wejsciu do pokoju - online
+                io.sockets.emit('rooms:refresh-rooms', data.rooms);
             }
 
         }

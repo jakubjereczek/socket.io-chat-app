@@ -30,8 +30,9 @@ const RoomsList = () => {
                 return toast.warn("🦄 There are no active chats. Create own room.");
 
             }
+            console.log('ROOMS PO USUNIECIU JEST ROWNY ===', rooms);
             toast.success("🦄 Refresh the list with rooms");
-            console.log('rooms', rooms);
+            console.log('ROOMS JEST ROWNY', rooms);
             const newState = [...rooms];
             setData(newState);
             setIsLoading(false);
@@ -50,7 +51,7 @@ const RoomsList = () => {
                         <div>
                             <TitleThin small><span><FaCalendarTimes /> Created: {new Date(room.created_time).toDateString()}</span></TitleThin>
                             <TitleThin small><span><FaCalendarTimes /> Created by: {room.created_by}</span></TitleThin>
-                            <TitleThin small><span><FaChalkboardTeacher /> Online: {room.users.lenght}</span></TitleThin>
+                            <TitleThin small><span><FaChalkboardTeacher /> Online: {room.users.length}</span></TitleThin>
                             <TitleThin small><span><FaCog /> Password: {room.private ? "yes" : "no"}</span></TitleThin>
                             <Button onClick={() => {
                                 // zmiana najpierw w context
