@@ -5,12 +5,16 @@ import { useSocket } from '../contexts/SocketContext';
 import { toast } from 'react-toastify';
 import { useHistory } from "react-router-dom";
 
+import { useGeneratorId } from '../hooks';
+
 const Profil = ({ changeActivePopup, changePopUpContent, isActivePopup }) => {
 
     const socketContext = useSocket();
     const socket = socketContext.socket;
     const user = socketContext.user;
     const history = useHistory();
+
+    const id = useGeneratorId();
 
     useEffect(() => {
         socket.on('rooms:create-success', (room) => {
@@ -44,8 +48,10 @@ const Profil = ({ changeActivePopup, changePopUpContent, isActivePopup }) => {
         } else if (nameRoom.current.value.length > 32) {
             return toast.warn("🦄 Room name should have less than 32 characters!");
         }
+        // id - losowy ciag znakow 12 generowany przez hook
         const room = {
-            id: user.id,
+            id: id,
+            userId: user.id,
             name: nameRoom.current.value,
             // to do
             private: false,

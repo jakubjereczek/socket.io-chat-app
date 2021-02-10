@@ -5,7 +5,6 @@ import { Wrapper, Header, Containter, MessageContainer, Message, MessageIcon, Me
 import { Title, Input, Button, TitleBold, TitleThin, Textarea } from './Styles.css'
 import { toast } from 'react-toastify';
 
-
 import { useSocket } from '../contexts/SocketContext';
 
 const Room = () => {
@@ -31,12 +30,10 @@ const Room = () => {
 
     useEffect(() => {
         socket.on('rooms:get-rooms', (room) => {
-            console.log('get rooms');
             setData(room);
             setIsLoading(false);
         })
         socket.on('rooms:get-sent-message', (message, userName) => {
-            console.log('POBIERAM WIADOMOSC', userIsReadingMessagesAbove);
             // setIsLoading(true);
             changeMessanges(message, userName);
         })
@@ -126,11 +123,6 @@ const Room = () => {
         }
         setIsScrollDone(true);
     }, [RenderedMessages]);
-
-
-    useEffect(() => {
-        console.log('Zmieniono: isLoading lub setLoading');
-    }, [isLoading, setIsLoading]);
 
     if (!user || user.room !== id) {
         toast.warn("🦄 You're not allowed to connect to this chat or chat isn't exist");

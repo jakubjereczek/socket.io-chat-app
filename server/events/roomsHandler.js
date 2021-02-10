@@ -5,8 +5,9 @@ module.exports = (io, socket) => {
     // to do usuwanie roomu gdy nikogo w nim nie ma
     // dodaj liczenie przy join i left plus jakos przy disconnect
 
-    const rooms_create = ({ id, name, private, created_by, created_time, users }) => {
+    const rooms_create = ({ id, userId, name, private, created_by, created_time, users }) => {
         // ID roomu przejmuję id zalozyciela.
+        // ID POKOJU JEDNAK TO LOSOWY CIAG ZNAKOW.
         const room = {
             id: "room" + id,
             name,
@@ -16,7 +17,8 @@ module.exports = (io, socket) => {
             users
         }
         // todo: sprawdzanie czy istnieje, jesli nie to nie to wysylamy emit, ale w przypadku skorzystania z mongodb by nie powielać
-        let findedUser = data.users.find(user => user.id === id);
+        let findedUser = data.users.find(user => user.id === userId);
+        console.log('dindedUser', findedUser);
         if (findedUser.room) {
             return;
         }
@@ -66,18 +68,14 @@ module.exports = (io, socket) => {
             } else {
                 data.rooms = [roomsWithoutThisRoom];
             }
-
-            console.log('pokoj zostal usuniety poniewaz nikogo w nim nie ma');
-            io.sockets.emit('rooms:refresh-rooms', data.rooms);
+            console.log('pokoj zostal usuniety poniewaz nikogo w nim nie ma - wyjscie za pomoca button exit');
         } else {
             data.rooms = roomsCopy;
         }
         console.log('socket leave the room');
-        // odswiezam liste online
+        // odswiezam liste online dla reszty uczestnikow chatu
         io.to(findedRoom.id).emit('rooms:get-rooms', findedRoom);
-
-
-        // refresh po wejsciu do pokoju - online
+        // refresh po wyjsciu z pokoju - lista rooms
         io.sockets.emit('rooms:refresh-rooms', data.rooms);
     }
 
@@ -87,23 +85,17 @@ module.exports = (io, socket) => {
     }
 
     const rooms_get_rooms_req = (id) => {
-        console.log('123123');
         let findedRoom = data.rooms.find(room => room.id === id);
-        console.log('findedRoom', findedRoom);
         // odswiezam sobie
         socket.emit('rooms:get-rooms', findedRoom);
-
         // odsiezam wszystkim obecnym - uaktualnianie listy online - dodac przy wyjsciu jeszcze takie cos
-        console.log('ODSWIEZAM DLA INNYCH LDUZI', findedRoom.name);
         io.to(findedRoom.id).emit('rooms:get-rooms', findedRoom);
 
     }
 
-    const rooms_send_message = (message, user, id) => {
+    const rooms_send_message = (message, user) => {
         let findedRoom = data.rooms.find(room => room.id === id);
-
         io.to(findedRoom.id).emit('rooms:get-sent-message', message, user);
-        console.log('message: ' + message + "by user: " + user);
     }
 
     socket.on("rooms:create", rooms_create);

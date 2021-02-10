@@ -25,7 +25,6 @@ const onConnection = (socket) => {
     socket.on("disconnect", () => {
         // Na początku sprawdzam id, dzięki ktoremu znajdę dane uzytkownika.
         const socketId = socket.id;
-
         const usersCopy = data.users;
 
         // nie znajduje
@@ -45,19 +44,18 @@ const onConnection = (socket) => {
 
                 if (findedRoom.users.length === 0) {
                     let roomsWithoutThisRoom = roomsCopy.find(room => room !== findedRoom);
+
                     if (roomsWithoutThisRoom === undefined) {
                         data.rooms = [];
                     } else {
                         data.rooms = [roomsWithoutThisRoom];
                     }
-                    console.log('pokoj zostal usuniety poniewaz nikogo w nim nie ma');
-                    io.sockets.emit('rooms:refresh-rooms', data.rooms);
+                    console.log('pokoj zostal usuniety poniewaz nikogo w nim nie ma - wyjscie z karty');
                 } else {
                     data.rooms = roomsCopy;
                 }
                 io.to(findedRoom.id).emit('rooms:get-rooms', findedRoom);
-
-                // refresh po wejsciu do pokoju - online
+                // refresh po wyjsciu z pokoju - lista rooms
                 io.sockets.emit('rooms:refresh-rooms', data.rooms);
             }
 
@@ -67,8 +65,6 @@ const onConnection = (socket) => {
 }
 
 io.on("connection", onConnection);
-
-
 
 server.listen(port, "127.0.0.1", () => {
     console.log(`Server is listening at http://127.0.0.1:${port}`)
