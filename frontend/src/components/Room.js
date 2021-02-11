@@ -52,7 +52,6 @@ const Room = () => {
     }
 
     const changeMessanges = useCallback((type, message, userName) => {
-        // if (!isLoading) {
         const newMessage = {
             author: userName,
             type,
@@ -158,9 +157,11 @@ const Room = () => {
                             {data && (
                                 <React.Fragment>
                                     {console.log(data)}
-
                                     <TitleBold>{data.name}</TitleBold>
-                                    <TitleThin small>Online: {data.users.length}</TitleThin>
+                                    <TitleThin small>Online: {data.users.length}
+                                    ()
+                                     {/* todo: lista w chacie osob - ale najpierw przerobic, aby przekazywać obiekt user a nie same id */}
+                                    </TitleThin>
                                 </React.Fragment>
                             )}
                         </div>

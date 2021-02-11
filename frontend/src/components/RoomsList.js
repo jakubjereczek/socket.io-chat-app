@@ -34,12 +34,9 @@ const RoomsList = () => {
     useEffect(() => {
         socket.emit('users:refresh-rooms-request');
 
-        console.log('NASLUCHIWANIE REFRESHHU');
         socket.on('rooms:refresh-rooms', handleRefreshRooms);
 
         return () => {
-            console.log('NASLUCHIWANIE REFRESHHU - STOP');
-
             socket.off('rooms:refresh-rooms', handleRefreshRooms);
         }
     }, []);
@@ -54,7 +51,7 @@ const RoomsList = () => {
                             <Title small>{room.name}</Title>
                         </div>
                         <div>
-                            <TitleThin small><span><FaCalendarTimes /> Created: {new Date(room.created_time).toDateString()}</span></TitleThin>
+                            <TitleThin small><span><FaCalendarTimes /> Created: {new Date(room.created_time).toLocaleString()}</span></TitleThin>
                             <TitleThin small><span><FaCalendarTimes /> Created by: {room.created_by}</span></TitleThin>
                             <TitleThin small><span><FaChalkboardTeacher /> Online: {room.users.length}</span></TitleThin>
                             <TitleThin small><span><FaCog /> Password: {room.private ? "yes" : "no"}</span></TitleThin>
