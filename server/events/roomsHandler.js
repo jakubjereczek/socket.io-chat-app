@@ -24,8 +24,8 @@ module.exports = (io, socket) => {
         }
         data.rooms.push(room);
         socket.emit('rooms:create-success', room);
-        // Globalny refresh dla wszystkich po dodaniu 
-        io.sockets.emit('rooms:refresh-rooms', data.rooms);
+
+        // refresh globalny jest w join
     }
 
     const rooms_join = (id, userId) => {
@@ -42,6 +42,9 @@ module.exports = (io, socket) => {
 
         socket.join(id)
         console.log('socket join to room');
+
+        // informacja o wejsciu do kanalu
+        io.to(findedRoom.id).emit('rooms:get-sent-message', "notification", "has join the room", findedUser.name);
 
         // refresh po wejsciu do pokoju - online
         io.sockets.emit('rooms:refresh-rooms', data.rooms);
@@ -75,8 +78,14 @@ module.exports = (io, socket) => {
         console.log('socket leave the room');
         // odswiezam liste online dla reszty uczestnikow chatu
         io.to(findedRoom.id).emit('rooms:get-rooms', findedRoom);
+
+        // informacja o wyjsciu z kanalu
+        io.to(findedRoom.id).emit('rooms:get-sent-message', "notification", "has left the room", findedUser.name);
+
         // refresh po wyjsciu z pokoju - lista rooms
-        io.sockets.emit('rooms:refresh-rooms', data.rooms);
+        // wszyscy oprocz socketu - poniewaz on ma odswiezanie w componencie
+        socket.broadcast.emit('rooms:refresh-rooms', data.rooms);
+
     }
 
     const rooms_refesh_rooms_req = () => {
@@ -93,9 +102,9 @@ module.exports = (io, socket) => {
 
     }
 
-    const rooms_send_message = (message, user) => {
-        let findedRoom = data.rooms.find(room => room.id === id);
-        io.to(findedRoom.id).emit('rooms:get-sent-message', message, user);
+    const rooms_send_message = (type, message, user, roomName) => {
+        let findedRoom = data.rooms.find(room => room.id === roomName);
+        io.to(findedRoom.id).emit('rooms:get-sent-message', type, message, user);
     }
 
     socket.on("rooms:create", rooms_create);

@@ -16,27 +16,30 @@ const Profil = ({ changeActivePopup, changePopUpContent, isActivePopup }) => {
 
     const id = useGeneratorId();
 
+    const handleCreateRoom = (room) => {
+        const { created_by, id, name } = room;
+        const userObject = {
+            id: user.id,
+            name: created_by,
+            room: id,
+        }
+        socketContext.setUser(userObject);
+        toast.success("🦄 You has created a room: " + name);
+
+        // unvisible
+        changeActivePopup(false);
+        // przejscie do chatu 
+        socket.emit('rooms:join', id, user.id);
+        history.push("/room/" + id);
+    };
+
     useEffect(() => {
-        socket.on('rooms:create-success', (room) => {
-            const { created_by, id, name } = room;
-            const userObject = {
-                id: user.id,
-                name: created_by,
-                room: id,
-            }
-            socketContext.setUser(userObject);
-            toast.success("🦄 You has created a room: " + name);
+        socket.on('rooms:create-success', handleCreateRoom);
 
-            // unvisible
-            changeActivePopup(false);
-            // przejscie do chatu 
-            socket.emit('rooms:join', id, user.id);
-            history.push("/room/" + id);
-
-        })
-
-    }, [socket]);
-
+        return () => {
+            socket.off('rooms:create-success', handleCreateRoom);
+        }
+    }, []);
 
     const nameRoom = React.createRef();
     const createRoom = () => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useHistory } from "react-router-dom";
 
 import { Wrapper, Header, Containter, MessageContainer, Message, MessageIcon, MessageText, Author, InputContainer } from './Room.css';
@@ -14,7 +14,7 @@ const Room = () => {
     const history = useHistory();
     let { id } = useParams();
 
-    const [data, setData] = useState({});
+    const [data, setData] = useState(undefined);
     const [messages, setMessages] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [buttonIsActive, setButtonIsActive] = useState(true);
@@ -24,20 +24,23 @@ const Room = () => {
     const scroll = useRef();
     const container = useRef();
 
-    useEffect(() => {
-        socket.emit('rooms:get-room-request', id);
-    }, []);
+    const handleInitRoom = useCallback((room) => {
+        setData(room);
+        setIsLoading(false);
+    })
 
     useEffect(() => {
-        socket.on('rooms:get-rooms', (room) => {
-            setData(room);
-            setIsLoading(false);
-        })
-        socket.on('rooms:get-sent-message', (message, userName) => {
-            // setIsLoading(true);
-            changeMessanges(message, userName);
-        })
-    }, [socket]);
+        socket.emit('rooms:get-room-request', id);
+
+        socket.on('rooms:get-rooms', handleInitRoom);
+        socket.on('rooms:get-sent-message', changeMessanges);
+
+        return () => {
+            socket.off('rooms:get-rooms', handleInitRoom);
+            socket.off('rooms:get-sent-message', changeMessanges);
+        }
+
+    }, [])
 
     const scrollManager = () => {
         if (scroll.current.getBoundingClientRect().y - container.current.getBoundingClientRect().height > 100) {
@@ -48,10 +51,11 @@ const Room = () => {
         }
     }
 
-    const changeMessanges = (message, userName) => {
-
+    const changeMessanges = useCallback((type, message, userName) => {
+        // if (!isLoading) {
         const newMessage = {
             author: userName,
+            type,
             message
         }
         const messagesCopy = messages;
@@ -64,7 +68,8 @@ const Room = () => {
             setIsScrollDone(false);
             setIsLoading(false);
         }
-    }
+        // }
+    }, [isLoading, setIsLoading]);
 
     const changeMessangesRequest = () => {
         console.log('REGENERUJE LOL!!!');
@@ -75,7 +80,8 @@ const Room = () => {
         setButtonIsActive(false);
 
         const value = textBoxValue.current.value;
-        socket.emit('rooms:send-message', value, user.name, user.room);
+        const type = "message"
+        socket.emit('rooms:send-message', type, value, user.name, user.room);
         textBoxValue.current.value = ""
         setTimeout(() => {
             setButtonIsActive(true);
@@ -84,33 +90,46 @@ const Room = () => {
 
     const RenderedMessages = useMemo(() => messages.map((message, index) => {
         if (message.author === user.name) {
-            return (
-                <MessageContainer ref={scroll}>
-                    <Message>
-                        <MessageIcon>
-                            {/* todo */}
-                        </MessageIcon>
-                        <MessageText>
-                            <Author>{message.author}</Author>
-                            {message.message}
-                        </MessageText>
-                    </Message>
-                </MessageContainer>
-            )
+            if (message.type === "message") {
+                return (
+                    <MessageContainer ref={scroll}>
+                        <Message>
+                            <MessageIcon>
+                                {/* todo */}
+                            </MessageIcon>
+                            <MessageText>
+                                <Author>{message.author}</Author>
+                                {message.message}
+                            </MessageText>
+                        </Message>
+                    </MessageContainer>
+                )
+            }
         } else {
-            return (
-                <MessageContainer ref={scroll} gray>
-                    <Message>
-                        <MessageText gray>
-                            <Author gray>{message.author}</Author>
-                            {message.message}
-                        </MessageText>
-                        <MessageIcon gray>
-                            {/* todo */}
-                        </MessageIcon>
-                    </Message>
-                </MessageContainer>
-            )
+            if (message.type === "message") {
+                return (
+                    <MessageContainer ref={scroll} gray>
+                        <Message>
+                            <MessageText gray>
+                                <Author gray>{message.author}</Author>
+                                {message.message}
+                            </MessageText>
+                            <MessageIcon gray>
+                                {/* todo */}
+                            </MessageIcon>
+                        </Message>
+                    </MessageContainer>
+                )
+            } else if (message.type === "notification") {
+                // wyswietlenie notyfikacji o dolaczeniu lub wyjsciu innej osoby. Twoja wiadomosc nie wyswietli się Tobie, a innym tak.?
+                return (
+                    <MessageContainer ref={scroll} gray>
+                        <Message>
+                            <MessageText gray>{message.author} {message.message}</MessageText>
+                        </Message>
+                    </MessageContainer>
+                )
+            }
         }
         // to do: is typing..
     }), [changeMessangesRequest]);
@@ -136,8 +155,14 @@ const Room = () => {
                 <Header>
                     <div>
                         <div>
-                            <TitleBold>{data.name}</TitleBold>
-                            <TitleThin small>Online: {data.users.length}</TitleThin>
+                            {data && (
+                                <React.Fragment>
+                                    {console.log(data)}
+
+                                    <TitleBold>{data.name}</TitleBold>
+                                    <TitleThin small>Online: {data.users.length}</TitleThin>
+                                </React.Fragment>
+                            )}
                         </div>
                     </div>
                     <div>
@@ -164,7 +189,7 @@ const Room = () => {
                         <Button disabled={!buttonIsActive} onClick={sendMessage}>Send a message</Button>
                     </div>
                 </InputContainer>
-            </Wrapper>
+            </Wrapper >
         )
     );
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ListWrapper, ListElement } from './RoomsList.css';
 import { Title, Button, TitleBold, TitleThin } from './Styles.css'
 
@@ -19,25 +19,30 @@ const RoomsList = () => {
     const [data, setData] = useState({});
     const [isLoading, setIsLoading] = useState(true);
 
+    const handleRefreshRooms = useCallback((rooms) => {
+        console.log('wykonuje refresh - funkcja');
+        if (rooms.length === 0) {
+            setData([]);
+            return toast.warn("🦄 There are no active chats. Create own room.");
+        }
+        toast.success("🦄 Refresh the list with rooms");
+        const newState = [...rooms];
+        setData(newState);
+        setIsLoading(false);
+    }, []);
+
     useEffect(() => {
         socket.emit('users:refresh-rooms-request');
-    }, [])
 
-    useEffect(() => {
-        socket.on('rooms:refresh-rooms', (rooms) => {
-            if (rooms.length === 0) {
-                setData([]);
-                return toast.warn("🦄 There are no active chats. Create own room.");
+        console.log('NASLUCHIWANIE REFRESHHU');
+        socket.on('rooms:refresh-rooms', handleRefreshRooms);
 
-            }
-            console.log('ROOMS PO USUNIECIU JEST ROWNY ===', rooms);
-            toast.success("🦄 Refresh the list with rooms");
-            console.log('ROOMS JEST ROWNY', rooms);
-            const newState = [...rooms];
-            setData(newState);
-            setIsLoading(false);
-        });
-    }, [socket]);
+        return () => {
+            console.log('NASLUCHIWANIE REFRESHHU - STOP');
+
+            socket.off('rooms:refresh-rooms', handleRefreshRooms);
+        }
+    }, []);
 
     return (
         <React.Fragment>

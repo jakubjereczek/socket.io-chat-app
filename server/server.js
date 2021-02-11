@@ -55,6 +55,10 @@ const onConnection = (socket) => {
                     data.rooms = roomsCopy;
                 }
                 io.to(findedRoom.id).emit('rooms:get-rooms', findedRoom);
+
+                // informacja o wyjsciu z kanalu
+                io.to(findedRoom.id).emit('rooms:get-sent-message', "notification", "has join left room - close the explo", findedUser.name);
+
                 // refresh po wyjsciu z pokoju - lista rooms
                 io.sockets.emit('rooms:refresh-rooms', data.rooms);
             }
