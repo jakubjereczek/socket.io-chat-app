@@ -24,6 +24,7 @@ const Room = () => {
     const scroll = useRef();
     const container = useRef();
 
+    // Przy pierwszym wejsciu oraz przy wejsciu, wyjsciu innych osobnikow.
     const handleInitRoom = useCallback((room) => {
         setData(room);
         setIsLoading(false);
@@ -71,7 +72,7 @@ const Room = () => {
     }, [isLoading, setIsLoading]);
 
     const changeMessangesRequest = () => {
-        console.log('REGENERUJE LOL!!!');
+        console.log('Request do ponownego wygenerowania listy wiadomosci.');
     }
 
     const textBoxValue = React.createRef();
@@ -133,19 +134,29 @@ const Room = () => {
         // to do: is typing..
     }), [changeMessangesRequest]);
 
+    const ActiveUsers = (
+        data && data.users.map((user, index) => {
+            return (
+                <span key={index}>{user.name}{data.users.length - 1 === index ? "" : ", "}</span>)
+        })
+    );
+
     useEffect(() => {
         // Scrollowanie od ostatniej wiadomosci.
         if (!userIsReadingMessagesAbove) {
-            console.log('PRZENOSZE NA DOL');
-            scroll.current && scroll.current.scrollIntoView({ behavior: "auto" })
+            scroll.current && scroll.current.scrollIntoView({ behavior: "auto" }) // przejdzie do ostatniej wiadomosci
         }
         setIsScrollDone(true);
     }, [RenderedMessages]);
 
     if (!user || user.room !== id) {
         toast.warn("🦄 You're not allowed to connect to this chat or chat isn't exist");
-        // to do
-        return history.push("/");
+        return (
+            <React.Fragment>
+                <h2>Error</h2>
+                {history.push("/")}
+            </React.Fragment>
+        )
     }
 
     return (
@@ -154,13 +165,12 @@ const Room = () => {
                 <Header>
                     <div>
                         <div>
+                            {/* Poprawic ladowanie danych */}
                             {data && (
                                 <React.Fragment>
-                                    {console.log(data)}
+                                    {console.log(ActiveUsers)}
                                     <TitleBold>{data.name}</TitleBold>
-                                    <TitleThin small>Online: {data.users.length}
-                                    ()
-                                     {/* todo: lista w chacie osob - ale najpierw przerobic, aby przekazywać obiekt user a nie same id */}
+                                    <TitleThin small>Online: {data.users.length} ({ActiveUsers})
                                     </TitleThin>
                                 </React.Fragment>
                             )}

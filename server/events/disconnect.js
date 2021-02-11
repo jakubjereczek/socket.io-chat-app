@@ -19,7 +19,7 @@ module.exports = (io, socket) => {
                 data.users = usersCopy;
 
                 let findedRoom = data.getRoom(roomId, roomsCopy);
-                findedRoom.users = findedRoom.users.filter(user => user != socketId);
+                findedRoom.users = findedRoom.users.filter(user => user.id != socketId);
 
                 // usuwamy pokoj poniewaz jest pusty
                 if (findedRoom.users.length === 0) {

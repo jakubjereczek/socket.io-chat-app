@@ -37,7 +37,11 @@ module.exports = (io, socket) => {
 
         let findedRoom = data.getRoom(id, roomsCopy);
         if (findedRoom) {
-            findedRoom.users.push(findedUser.id)
+            findedRoom.users.push(
+                {
+                    id: findedUser.id,
+                    name: findedUser.name
+                })
         }
         data.rooms = roomsCopy;
         socket.join(id)
@@ -66,7 +70,9 @@ module.exports = (io, socket) => {
 
         let findedRoom = data.getRoom(roomId, roomsCopy);
         if (findedRoom) {
-            findedRoom.users = findedRoom.users.filter(user => user != userId);
+            findedRoom.users = findedRoom.users.filter(user => user.id != userId);
+            console.log('findedRooms.user', findedRoom.users);
+            console.log('findedUser', findedUser);
             if (findedRoom.users.length === 0) {
                 let roomsWithoutThisRoom = roomsCopy.find(room => room !== findedRoom);
                 if (roomsWithoutThisRoom === undefined) {
@@ -97,9 +103,10 @@ module.exports = (io, socket) => {
 
     const rooms_get_rooms_req = (id) => {
         let findedRoom = data.getRoom(id, data.rooms);
-        socket.emit('rooms:get-rooms', findedRoom); // odswiezenie dla socketu
-        io.to(findedRoom.id).emit('rooms:get-rooms', findedRoom); // odswiezenie pozostalym obecynm w pokoju (uaktulnienie listy online)
-
+        if (findedRoom) {
+            socket.emit('rooms:get-rooms', findedRoom); // odswiezenie dla socketu
+            io.to(findedRoom.id).emit('rooms:get-rooms', findedRoom); // odswiezenie pozostalym obecynm w pokoju (uaktulnienie listy online)
+        }
     }
 
     const rooms_send_message = (type, message, user, roomName) => {
