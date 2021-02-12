@@ -12,7 +12,8 @@ module.exports = (io, socket) => {
             private,
             created_by,
             created_time,
-            users
+            users,
+            messages: []
         }
         const findedUser = data.getUser(userId, usersCopy);
         if (findedUser && findedUser.room) {
@@ -49,6 +50,12 @@ module.exports = (io, socket) => {
 
         // informacja o wejsciu do kanalu
         io.to(findedRoom.id).emit('rooms:get-sent-message', "notification", "has join the room", findedUser.name);
+        const newMessage = {
+            author: findedUser.name,
+            type: "notification",
+            message: "has join the room"
+        }
+        findedRoom.messages.push(newMessage);
 
         // globalny refresh po wejsciu do kanalu
         io.sockets.emit('rooms:refresh-rooms', data.rooms);
@@ -71,8 +78,6 @@ module.exports = (io, socket) => {
         let findedRoom = data.getRoom(roomId, roomsCopy);
         if (findedRoom) {
             findedRoom.users = findedRoom.users.filter(user => user.id != userId);
-            console.log('findedRooms.user', findedRoom.users);
-            console.log('findedUser', findedUser);
             if (findedRoom.users.length === 0) {
                 let roomsWithoutThisRoom = roomsCopy.find(room => room !== findedRoom);
                 if (roomsWithoutThisRoom === undefined) {
@@ -91,6 +96,12 @@ module.exports = (io, socket) => {
 
         // informacja o wyjsciu z kanalu
         io.to(findedRoom.id).emit('rooms:get-sent-message', "notification", "has left the room", findedUser.name);
+        const newMessage = {
+            author: findedUser.name,
+            type: "notification",
+            message: "has left the room"
+        }
+        findedRoom.messages.push(newMessage);
 
         // refresh po wyjsciu z pokoju - lista rooms
         // wszyscy oprocz socketu - poniewaz on ma odswiezanie w componencie
@@ -110,18 +121,33 @@ module.exports = (io, socket) => {
     }
 
     const rooms_send_message = (type, message, user, roomName) => {
+        const newMessage = {
+            author: user,
+            type,
+            message,
+        }
         let findedRoom = data.getRoom(roomName, data.rooms);
-        console.log('findedRoom', findedRoom);
+        findedRoom.messages.push(newMessage);
         if (findedRoom) {
             io.to(findedRoom.id).emit('rooms:get-sent-message', type, message, user);
+        }
+    }
+
+    const rooms_get_sent_message_req = (id) => {
+        let findedRoom = data.getRoom(id, data.rooms);
+        if (findedRoom) {
+            socket.emit('rooms:get-sent-messages-previously', findedRoom.messages);
         }
     }
 
     socket.on("rooms:create", rooms_create);
     socket.on("rooms:join", rooms_join);
     socket.on("rooms:leave", rooms_leave);
-    socket.on("users:refresh-rooms-request", rooms_refesh_rooms_req);
+    socket.on("rooms:refresh-rooms-request", rooms_refesh_rooms_req);
     socket.on("rooms:get-room-request", rooms_get_rooms_req)
     socket.on("rooms:send-message", rooms_send_message)
+
+    socket.on("rooms:get-sent-messages-request", rooms_get_sent_message_req)
+
 }
 

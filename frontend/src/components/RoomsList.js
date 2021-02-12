@@ -32,8 +32,8 @@ const RoomsList = () => {
     }, []);
 
     useEffect(() => {
-        socket.emit('users:refresh-rooms-request');
-
+        socket.emit('rooms:refresh-rooms-request');
+        console.log('aaa');
         socket.on('rooms:refresh-rooms', handleRefreshRooms);
 
         return () => {

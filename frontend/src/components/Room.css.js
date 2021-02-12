@@ -112,3 +112,16 @@ export const InputContainer = styled.div`
         flex-basis: 30%;
     }
 `
+
+export const Line = styled.div`
+    height: 2px;
+    width: 100%;
+    border-bottom: 2px ${props => props.theme.dark_light} dotted;
+    text-align: center;
+    margin-bottom: 20px;
+`
+
+export const ScrollHiddenElement = styled.div`
+  visibility: hidden;
+
+`

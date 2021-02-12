@@ -17,6 +17,5 @@ module.exports = (io, socket) => {
     const user_disconnect = () => { };
 
     socket.on('users:create', users_create);
-
 }
 

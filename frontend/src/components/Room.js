@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useHistory } from "react-router-dom";
 
-import { Wrapper, Header, Containter, MessageContainer, Message, MessageIcon, MessageText, Author, InputContainer } from './Room.css';
+import { Wrapper, Header, Containter, MessageContainer, Message, MessageIcon, MessageText, Author, InputContainer, Line, ScrollHiddenElement } from './Room.css';
 import { Title, Input, Button, TitleBold, TitleThin, Textarea } from './Styles.css'
 import { toast } from 'react-toastify';
 
@@ -14,8 +14,11 @@ const Room = () => {
     const history = useHistory();
     let { id } = useParams();
 
+    // all data about room (with messanges)
     const [data, setData] = useState(undefined);
     const [messages, setMessages] = useState([]);
+    const [lastestMessages, setLatestMessanges] = useState([]);
+
     const [isLoading, setIsLoading] = useState(true);
     const [buttonIsActive, setButtonIsActive] = useState(true);
     const [isScrollDone, setIsScrollDone] = useState(false);
@@ -26,21 +29,32 @@ const Room = () => {
 
     // Przy pierwszym wejsciu oraz przy wejsciu, wyjsciu innych osobnikow.
     const handleInitRoom = useCallback((room) => {
+        console.log('ROOM KTORY POBIERAM JEST ROWNY ' + room);
         setData(room);
-        setIsLoading(false);
-    })
+        // setIsLoading(false);
+    }, [])
+
+    const handleMessageList = useCallback((messages) => {
+        // inicjalizacja wiadomosci, ktore zostały napisane przed dołączniem 
+        setLatestMessanges(messages);
+        // setIsLoading(false);
+    });
+
 
     useEffect(() => {
+        setIsLoading(true);
         socket.emit('rooms:get-room-request', id);
+        socket.emit('rooms:get-sent-messages-request', id);
 
         socket.on('rooms:get-rooms', handleInitRoom);
         socket.on('rooms:get-sent-message', changeMessanges);
+        socket.on('rooms:get-sent-messages-previously', handleMessageList)
+
 
         return () => {
             socket.off('rooms:get-rooms', handleInitRoom);
             socket.off('rooms:get-sent-message', changeMessanges);
         }
-
     }, [])
 
     const scrollManager = () => {
@@ -52,12 +66,14 @@ const Room = () => {
         }
     }
 
-    const changeMessanges = useCallback((type, message, userName) => {
+    const changeMessanges = (type, message, userName) => {
         const newMessage = {
             author: userName,
             type,
             message
         }
+        console.log('data', data);
+
         const messagesCopy = messages;
         messagesCopy.push(newMessage);
         setMessages(messagesCopy);
@@ -68,8 +84,8 @@ const Room = () => {
             setIsScrollDone(false);
             setIsLoading(false);
         }
-        // }
-    }, [isLoading, setIsLoading]);
+    };
+
 
     const changeMessangesRequest = () => {
         console.log('Request do ponownego wygenerowania listy wiadomosci.');
@@ -89,41 +105,48 @@ const Room = () => {
     }
 
     const RenderedMessages = useMemo(() => messages.map((message, index) => {
-        if (message.author === user.name) {
-            if (message.type === "message") {
-                return (
-                    <MessageContainer ref={scroll}>
-                        <Message>
-                            <MessageIcon>
-                                {/* todo */}
-                            </MessageIcon>
-                            <MessageText>
-                                <Author>{message.author}</Author>
-                                {message.message}
-                            </MessageText>
-                        </Message>
-                    </MessageContainer>
+        if (message.type === "message") {
+            let Content;
+            let gray;
+            if (message.author === user.name) {
+                gray = false;
+                Content = (
+                    <React.Fragment>
+                        <MessageIcon>
+                            {/* todo */}
+                        </MessageIcon>
+                        <MessageText>
+                            <Author>{message.author}</Author>
+                            {message.message}
+                        </MessageText>
+                    </React.Fragment>
+                )
+            } else {
+                gray = true;
+                Content = (
+                    <React.Fragment>
+                        <MessageText gray>
+                            <Author gray>{message.author}</Author>
+                            {message.message}
+                        </MessageText>
+                        <MessageIcon gray>
+                            {/* todo */}
+                        </MessageIcon>
+                    </React.Fragment>
                 )
             }
-        } else {
-            if (message.type === "message") {
+            return (
+                <MessageContainer gray={gray}>
+                    <Message>
+                        {Content}
+                    </Message>
+                </MessageContainer>
+            )
+        } else if (message.type === "notification") {
+            // wyswietlenie notyfikacji o dolaczeniu lub wyjsciu innej osoby. Twoja wiadomosc nie wyswietli się Tobie, a innym tak.?
+            if (message.author !== user.name) {
                 return (
-                    <MessageContainer ref={scroll} gray>
-                        <Message>
-                            <MessageText gray>
-                                <Author gray>{message.author}</Author>
-                                {message.message}
-                            </MessageText>
-                            <MessageIcon gray>
-                                {/* todo */}
-                            </MessageIcon>
-                        </Message>
-                    </MessageContainer>
-                )
-            } else if (message.type === "notification") {
-                // wyswietlenie notyfikacji o dolaczeniu lub wyjsciu innej osoby. Twoja wiadomosc nie wyswietli się Tobie, a innym tak.?
-                return (
-                    <MessageContainer ref={scroll} gray>
+                    <MessageContainer gray>
                         <Message>
                             <MessageText gray>{message.author} {message.message}</MessageText>
                         </Message>
@@ -140,6 +163,51 @@ const Room = () => {
                 <span key={index}>{user.name}{data.users.length - 1 === index ? "" : ", "}</span>)
         })
     );
+
+    // Wiadomości napisane przed dolączniem użytkownika.
+    const LatestMess = (
+        lastestMessages && lastestMessages.map(message => {
+            let Content;
+            let gray;
+            if (message.type !== "message") {
+                return;
+            }
+            if (message.author === user.name) {
+                gray = false;
+                Content = (
+                    <React.Fragment>
+                        <MessageIcon>
+                            {/* todo */}
+                        </MessageIcon>
+                        <MessageText>
+                            <Author>{message.author}</Author>
+                            {message.message}
+                        </MessageText>
+                    </React.Fragment>
+                )
+            } else {
+                gray = true;
+                Content = (
+                    <React.Fragment>
+                        <MessageText gray>
+                            <Author gray>{message.author}</Author>
+                            {message.message}
+                        </MessageText>
+                        <MessageIcon gray>
+                            {/* todo */}
+                        </MessageIcon>
+                    </React.Fragment>
+                )
+            }
+            return (
+                <MessageContainer gray={gray}>
+                    <Message>
+                        {Content}
+                    </Message>
+                </MessageContainer>
+            )
+        })
+    )
 
     useEffect(() => {
         // Scrollowanie od ostatniej wiadomosci.
@@ -165,15 +233,13 @@ const Room = () => {
                 <Header>
                     <div>
                         <div>
-                            {/* Poprawic ladowanie danych */}
                             {data && (
                                 <React.Fragment>
-                                    {console.log(ActiveUsers)}
                                     <TitleBold>{data.name}</TitleBold>
-                                    <TitleThin small>Online: {data.users.length} ({ActiveUsers})
-                                    </TitleThin>
+                                    <TitleThin small>Online: {data.users.length} ({ActiveUsers})</TitleThin>
                                 </React.Fragment>
                             )}
+
                         </div>
                     </div>
                     <div>
@@ -190,7 +256,13 @@ const Room = () => {
                     </div>
                 </Header>
                 <Containter ref={container} onScroll={scrollManager}>
+                    {LatestMess}
+                    {/* 1 wiadomosc to powiadomienie o dolaczeniu */}
+                    {LatestMess.length > 1 ? <Line>
+                        <TitleThin small>Chat messages above has been written before you joined the room</TitleThin>
+                    </Line> : null}
                     {isScrollDone && RenderedMessages}
+                    <ScrollHiddenElement ref={scroll}>last</ScrollHiddenElement>
                 </Containter>
                 <InputContainer>
                     <div>

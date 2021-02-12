@@ -38,7 +38,13 @@ module.exports = (io, socket) => {
                 io.to(findedRoom.id).emit('rooms:get-rooms', findedRoom);
 
                 // informacja o wyjsciu z kanalu
-                io.to(findedRoom.id).emit('rooms:get-sent-message', "notification", "has join left room (closed browser)", findedUser.name);
+                io.to(findedRoom.id).emit('rooms:get-sent-message', "notification", "has  left room (closed browser)", findedUser.name);
+                const newMessage = {
+                    author: findedUser.name,
+                    type: "notification",
+                    message: "has  left room (closed browser)"
+                }
+                findedRoom.messages.push(newMessage);
 
                 // refresh po wyjsciu z pokoju - lista rooms
                 io.sockets.emit('rooms:refresh-rooms', data.rooms);

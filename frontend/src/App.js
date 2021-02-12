@@ -17,7 +17,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import { MainWrapper } from './components/Styles.css'
 
 import { Name, Profil, RoomsList, Popup, Room } from './components';
-
 import { useSocket } from './contexts/SocketContext';
 
 toast.configure();
