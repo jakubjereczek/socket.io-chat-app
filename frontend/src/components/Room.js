@@ -20,8 +20,8 @@ const Room = () => {
     const [lastestMessages, setLatestMessanges] = useState([]);
 
     const [isLoading, setIsLoading] = useState(true);
+    const [isMessagesLoading, setMessagesLoading] = useState(false);
     const [buttonIsActive, setButtonIsActive] = useState(true);
-    const [isScrollDone, setIsScrollDone] = useState(false);
     const [userIsReadingMessagesAbove, setuserIsReadingMessagesAbove] = useState(false);
 
     const scroll = useRef();
@@ -29,9 +29,8 @@ const Room = () => {
 
     // Przy pierwszym wejsciu oraz przy wejsciu, wyjsciu innych osobnikow.
     const handleInitRoom = useCallback((room) => {
-        console.log('ROOM KTORY POBIERAM JEST ROWNY ' + room);
         setData(room);
-        // setIsLoading(false);
+        setIsLoading(false);
     }, [])
 
     const handleMessageList = useCallback((messages) => {
@@ -67,29 +66,20 @@ const Room = () => {
     }
 
     const changeMessanges = (type, message, userName) => {
-        const newMessage = {
-            author: userName,
-            type,
-            message
-        }
-        console.log('data', data);
-
-        const messagesCopy = messages;
-        messagesCopy.push(newMessage);
-        setMessages(messagesCopy);
-
-        if (!userIsReadingMessagesAbove) {
-            // generuje tylko gdy nie czyta wyzej 100 px od lat messagw
-            changeMessangesRequest();
-            setIsScrollDone(false);
-            setIsLoading(false);
+        if (!isMessagesLoading) {
+            setMessagesLoading(true);
+            console.log('dostalem request dodania nowej wiadomosci');
+            const newMessage = {
+                author: userName,
+                type,
+                message
+            }
+            const messagesCopy = messages;
+            messagesCopy.push(newMessage);
+            setMessages(messagesCopy);
+            setMessagesLoading(false);
         }
     };
-
-
-    const changeMessangesRequest = () => {
-        console.log('Request do ponownego wygenerowania listy wiadomosci.');
-    }
 
     const textBoxValue = React.createRef();
     const sendMessage = () => {
@@ -143,7 +133,7 @@ const Room = () => {
                 </MessageContainer>
             )
         } else if (message.type === "notification") {
-            // wyswietlenie notyfikacji o dolaczeniu lub wyjsciu innej osoby. Twoja wiadomosc nie wyswietli się Tobie, a innym tak.?
+            // wyswietlenie notyfikacji o dolaczeniu lub wyjsciu innej osoby. Twoja wiadomosc nie wyswietli się Tobie, a innym tak.
             if (message.author !== user.name) {
                 return (
                     <MessageContainer gray>
@@ -155,7 +145,7 @@ const Room = () => {
             }
         }
         // to do: is typing..
-    }), [changeMessangesRequest]);
+    }), [changeMessanges]);
 
     const ActiveUsers = (
         data && data.users.map((user, index) => {
@@ -214,7 +204,6 @@ const Room = () => {
         if (!userIsReadingMessagesAbove) {
             scroll.current && scroll.current.scrollIntoView({ behavior: "auto" }) // przejdzie do ostatniej wiadomosci
         }
-        setIsScrollDone(true);
     }, [RenderedMessages]);
 
     if (!user || user.room !== id) {
@@ -257,11 +246,11 @@ const Room = () => {
                 </Header>
                 <Containter ref={container} onScroll={scrollManager}>
                     {LatestMess}
-                    {/* 1 wiadomosc to powiadomienie o dolaczeniu */}
+                    {/* 1 wiadomosc to powiadomienie o dołączeniu */}
                     {LatestMess.length > 1 ? <Line>
                         <TitleThin small>Chat messages above has been written before you joined the room</TitleThin>
                     </Line> : null}
-                    {isScrollDone && RenderedMessages}
+                    {RenderedMessages}
                     <ScrollHiddenElement ref={scroll}>last</ScrollHiddenElement>
                 </Containter>
                 <InputContainer>
