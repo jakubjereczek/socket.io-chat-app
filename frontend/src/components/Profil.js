@@ -18,10 +18,12 @@ const Profil = ({ changeActivePopup, changePopUpContent, isActivePopup }) => {
 
     const handleCreateRoom = (room) => {
         const { created_by, id, name } = room;
+
         const userObject = {
             id: user.id,
             name: created_by,
             room: id,
+            chatColor: user.chatColor,
         }
         socketContext.setUser(userObject);
         toast.success("🦄 You has created a room: " + name);

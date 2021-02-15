@@ -2,11 +2,12 @@ const data = require('../data');
 
 module.exports = (io, socket) => {
 
-    const users_create = (payload) => {
+    const users_create = ({ name, room, chatColor }) => {
         const user = {
             id: socket.id,
-            name: payload,
-            room: ""
+            name,
+            room,
+            chatColor
         }
         // todo: sprawdzanie czy istnieje, jesli nie to nie to wysylamy emit, ale w przypadku skorzystania z mongodb by nie powielać
         data.users.push(user);

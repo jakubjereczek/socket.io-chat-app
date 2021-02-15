@@ -14,6 +14,8 @@ const Room = () => {
     const history = useHistory();
     let { id } = useParams();
 
+    console.log('user chatColor' + user.chatColor);
+
     // all data about room (with messanges)
     const [data, setData] = useState(undefined);
     const [messages, setMessages] = useState([]);
@@ -65,14 +67,15 @@ const Room = () => {
         }
     }
 
-    const changeMessanges = (type, message, userName) => {
+    const changeMessanges = (type, message, userName, chatColor) => {
         if (!isMessagesLoading) {
             setMessagesLoading(true);
             console.log('dostalem request dodania nowej wiadomosci');
             const newMessage = {
                 author: userName,
                 type,
-                message
+                message,
+                chatColor
             }
             const messagesCopy = messages;
             messagesCopy.push(newMessage);
@@ -83,11 +86,13 @@ const Room = () => {
 
     const textBoxValue = React.createRef();
     const sendMessage = () => {
-        setButtonIsActive(false);
-
         const value = textBoxValue.current.value;
+        if (value.length < 6) {
+            return toast.warn("🦄 Message should have 6 chars or more!");
+        }
+        setButtonIsActive(false);
         const type = "message"
-        socket.emit('rooms:send-message', type, value, user.name, user.room);
+        socket.emit('rooms:send-message', type, value, user.name, user.room, user.chatColor);
         textBoxValue.current.value = ""
         setTimeout(() => {
             setButtonIsActive(true);
@@ -95,6 +100,7 @@ const Room = () => {
     }
 
     const RenderedMessages = useMemo(() => messages.map((message, index) => {
+
         if (message.type === "message") {
             let Content;
             let gray;
@@ -102,10 +108,10 @@ const Room = () => {
                 gray = false;
                 Content = (
                     <React.Fragment>
-                        <MessageIcon>
+                        <MessageIcon style={{ backgroundColor: message.chatColor }} >
                             {/* todo */}
                         </MessageIcon>
-                        <MessageText>
+                        <MessageText style={{ backgroundColor: message.chatColor }}>
                             <Author>{message.author}</Author>
                             {message.message}
                         </MessageText>
@@ -115,11 +121,11 @@ const Room = () => {
                 gray = true;
                 Content = (
                     <React.Fragment>
-                        <MessageText gray>
+                        <MessageText style={{ backgroundColor: message.chatColor }} gray>
                             <Author gray>{message.author}</Author>
                             {message.message}
                         </MessageText>
-                        <MessageIcon gray>
+                        <MessageIcon style={{ backgroundColor: message.chatColor }} gray>
                             {/* todo */}
                         </MessageIcon>
                     </React.Fragment>
@@ -135,10 +141,11 @@ const Room = () => {
         } else if (message.type === "notification") {
             // wyswietlenie notyfikacji o dolaczeniu lub wyjsciu innej osoby. Twoja wiadomosc nie wyswietli się Tobie, a innym tak.
             if (message.author !== user.name) {
+                console.log(message);
                 return (
                     <MessageContainer gray>
                         <Message>
-                            <MessageText gray>{message.author} {message.message}</MessageText>
+                            <MessageText style={{ backgroundColor: message.chatColor }} gray>{message.author} {message.message}</MessageText>
                         </Message>
                     </MessageContainer>
                 )
@@ -166,10 +173,10 @@ const Room = () => {
                 gray = false;
                 Content = (
                     <React.Fragment>
-                        <MessageIcon>
+                        <MessageIcon style={{ backgroundColor: message.chatColor }}>
                             {/* todo */}
                         </MessageIcon>
-                        <MessageText>
+                        <MessageText style={{ backgroundColor: message.chatColor }}>
                             <Author>{message.author}</Author>
                             {message.message}
                         </MessageText>
@@ -179,11 +186,11 @@ const Room = () => {
                 gray = true;
                 Content = (
                     <React.Fragment>
-                        <MessageText gray>
+                        <MessageText style={{ backgroundColor: message.chatColor }} gray>
                             <Author gray>{message.author}</Author>
                             {message.message}
                         </MessageText>
-                        <MessageIcon gray>
+                        <MessageIcon style={{ backgroundColor: message.chatColor }} gray>
                             {/* todo */}
                         </MessageIcon>
                     </React.Fragment>
@@ -225,6 +232,7 @@ const Room = () => {
                             {data && (
                                 <React.Fragment>
                                     <TitleBold>{data.name}</TitleBold>
+                                    {/* to do: wyswietlenie kilku + hover ktory pokazuje wszystkich */}
                                     <TitleThin small>Online: {data.users.length} ({ActiveUsers})</TitleThin>
                                 </React.Fragment>
                             )}

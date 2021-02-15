@@ -41,19 +41,22 @@ module.exports = (io, socket) => {
             findedRoom.users.push(
                 {
                     id: findedUser.id,
-                    name: findedUser.name
+                    name: findedUser.name,
                 })
         }
         data.rooms = roomsCopy;
         socket.join(id)
         console.log('socket join to room');
 
+        console.log('KOLOR CHATU: ' + findedUser.chatColor);
+
         // informacja o wejsciu do kanalu
-        io.to(findedRoom.id).emit('rooms:get-sent-message', "notification", "has join the room", findedUser.name);
+        io.to(findedRoom.id).emit('rooms:get-sent-message', "notification", "has join the room", findedUser.name, findedUser.chatColor);
         const newMessage = {
             author: findedUser.name,
             type: "notification",
-            message: "has join the room"
+            message: "has join the room",
+            chatColor: findedUser.chatColor
         }
         findedRoom.messages.push(newMessage);
 
@@ -95,11 +98,12 @@ module.exports = (io, socket) => {
         io.to(findedRoom.id).emit('rooms:get-rooms', findedRoom);
 
         // informacja o wyjsciu z kanalu
-        io.to(findedRoom.id).emit('rooms:get-sent-message', "notification", "has left the room", findedUser.name);
+        io.to(findedRoom.id).emit('rooms:get-sent-message', "notification", "has left the room", findedUser.name, findedUser.chatColor);
         const newMessage = {
             author: findedUser.name,
             type: "notification",
-            message: "has left the room"
+            message: "has left the room",
+            chatColor: findedUser.chatColor
         }
         findedRoom.messages.push(newMessage);
 
@@ -120,22 +124,24 @@ module.exports = (io, socket) => {
         }
     }
 
-    const rooms_send_message = (type, message, user, roomName) => {
+    const rooms_send_message = (type, message, user, roomName, chatColor) => {
         const newMessage = {
             author: user,
             type,
             message,
+            chatColor
         }
         let findedRoom = data.getRoom(roomName, data.rooms);
         findedRoom.messages.push(newMessage);
         if (findedRoom) {
-            io.to(findedRoom.id).emit('rooms:get-sent-message', type, message, user);
+            io.to(findedRoom.id).emit('rooms:get-sent-message', type, message, user, chatColor);
         }
     }
 
     const rooms_get_sent_message_req = (id) => {
         let findedRoom = data.getRoom(id, data.rooms);
         if (findedRoom) {
+            console.log(findedRoom.messages);
             socket.emit('rooms:get-sent-messages-previously', findedRoom.messages);
         }
     }
