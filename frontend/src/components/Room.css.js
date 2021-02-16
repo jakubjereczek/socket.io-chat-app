@@ -2,6 +2,8 @@ import styled from 'styled-components';
 
 export const Wrapper = styled.div`
     height: 100%;
+    max-height: 100vh;
+    min-width: 300px;
 `;
 
 export const Header = styled.div`
@@ -101,6 +103,7 @@ export const Author = styled.p`
 `;
 
 export const InputContainer = styled.div`
+    position: relative;
     display: flex;
     height: calc(30% - 100px);
     background-color: ${props => props.theme.dark_light};
@@ -109,7 +112,12 @@ export const InputContainer = styled.div`
     align-items: center;
 
     & > div:nth-child(1) {
+        display: flex;
         flex-basis: 70%;
+        
+         & ~ {
+            margin: 10px;
+        }
     }
     & > div:nth-child(2) {
         flex-basis: 30%;
@@ -136,11 +144,27 @@ export const Time = styled.p`
     @media (max-width: 576px) {
         font-size: 1rem;
     }
-
-    
 `
 
 export const ScrollHiddenElement = styled.div`
   visibility: hidden;
 
+`
+export const EmojiContainer = styled.div`
+    position: absolute;
+    z-index: 1;
+    top: calc(100% - 410px);
+    left: calc(100% - 310px);
+`;
+
+export const EmojiClose = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: -36px;
+    right: 4px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
 `

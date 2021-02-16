@@ -1,8 +1,14 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useHistory } from "react-router-dom";
 
-import { Wrapper, Header, Containter, MessageContainer, Message, MessageIcon, MessageText, Author, InputContainer, Line, ScrollHiddenElement, Time } from './Room.css';
+import Picker from 'emoji-picker-react';
+
+import { Wrapper, Header, Containter, MessageContainer, Message, MessageIcon, MessageText, Author, InputContainer, Line, ScrollHiddenElement, Time, EmojiContainer, EmojiClose } from './Room.css';
 import { Title, Input, Button, TitleBold, TitleThin, Textarea } from './Styles.css'
+
+import { FaRegCaretSquareDown, GrEmoji } from 'react-icons/fa';
+import { FcLike } from "react-icons/fc";
+
 import { toast } from 'react-toastify';
 
 import { useSocket } from '../contexts/SocketContext';
@@ -25,11 +31,23 @@ const Room = () => {
     const [isMessagesLoading, setMessagesLoading] = useState(false);
     const [buttonIsActive, setButtonIsActive] = useState(true);
     const [userIsReadingMessagesAbove, setuserIsReadingMessagesAbove] = useState(false);
+    const [emojiContainerVisible, setEmojiContainerVisible] = useState(false);
 
     const textBoxValue = React.createRef();
 
+    const [chosenEmoji, setChosenEmoji] = useState(null);
+
     const scroll = useRef();
     const container = useRef();
+
+    const onEmojiClick = (event, emojiObject) => {
+        setChosenEmoji(emojiObject);
+        textBoxValue.current.value += emojiObject.emoji;
+        console.log('chosenEmoji' + emojiObject.emoji);
+    };
+
+    const toggleEmojiContainer = () => setEmojiContainerVisible(!emojiContainerVisible);
+
 
     // Przy pierwszym wejsciu oraz przy wejsciu, wyjsciu innych osobnikow.
     const handleInitRoom = useCallback((room) => {
@@ -272,12 +290,20 @@ const Room = () => {
                 <InputContainer>
                     <div>
                         <Textarea ref={textBoxValue} value={textBoxValue.current} />
+                        <FcLike onClick={toggleEmojiContainer} />
                     </div>
-
+                    {/* to do wyswietlanie i wylaczanie emoj */}
                     <div>
                         <Button disabled={!buttonIsActive} onClick={sendMessage}>Send a message</Button>
                     </div>
                 </InputContainer>
+                {emojiContainerVisible ? (
+                    <EmojiContainer>
+                        {/* Emoji picker */}
+                        <Picker onEmojiClick={onEmojiClick} pickerStyle={{ width: '300px', height: '300px' }} />
+                        <EmojiClose onClick={toggleEmojiContainer}><FaRegCaretSquareDown /></EmojiClose>
+                    </EmojiContainer>
+                ) : null}
             </Wrapper >
         )
     );
