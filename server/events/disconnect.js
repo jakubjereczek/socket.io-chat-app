@@ -38,13 +38,15 @@ module.exports = (io, socket) => {
                 io.to(findedRoom.id).emit('rooms:get-rooms', findedRoom);
 
                 // informacja o wyjsciu z kanalu
-                io.to(findedRoom.id).emit('rooms:get-sent-message', "notification", "has  left room (closed browser)", findedUser.name, findedUser.chatColor);
+                const time = Date.now();
+                io.to(findedRoom.id).emit('rooms:get-sent-message', "notification", "has  left room (closed browser)", findedUser.name, findedUser.chatColor, time);
                 console.log(findedUser);
                 const newMessage = {
                     author: findedUser.name,
                     type: "notification",
                     message: "has  left room (closed browser)",
-                    chatColor: findedUser.chatColor
+                    chatColor: findedUser.chatColor,
+                    time
                 }
                 findedRoom.messages.push(newMessage);
 

@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useHistory } from "react-router-dom";
 
-import { Wrapper, Header, Containter, MessageContainer, Message, MessageIcon, MessageText, Author, InputContainer, Line, ScrollHiddenElement } from './Room.css';
+import { Wrapper, Header, Containter, MessageContainer, Message, MessageIcon, MessageText, Author, InputContainer, Line, ScrollHiddenElement, Time } from './Room.css';
 import { Title, Input, Button, TitleBold, TitleThin, Textarea } from './Styles.css'
 import { toast } from 'react-toastify';
 
 import { useSocket } from '../contexts/SocketContext';
+import timeConverter from '../utils/timeConverter';
+
 
 const Room = () => {
     const socketContext = useSocket();
@@ -13,8 +15,6 @@ const Room = () => {
     const user = socketContext.user;
     const history = useHistory();
     let { id } = useParams();
-
-    console.log('user chatColor' + user.chatColor);
 
     // all data about room (with messanges)
     const [data, setData] = useState(undefined);
@@ -25,6 +25,8 @@ const Room = () => {
     const [isMessagesLoading, setMessagesLoading] = useState(false);
     const [buttonIsActive, setButtonIsActive] = useState(true);
     const [userIsReadingMessagesAbove, setuserIsReadingMessagesAbove] = useState(false);
+
+    const textBoxValue = React.createRef();
 
     const scroll = useRef();
     const container = useRef();
@@ -67,7 +69,7 @@ const Room = () => {
         }
     }
 
-    const changeMessanges = (type, message, userName, chatColor) => {
+    const changeMessanges = (type, message, userName, chatColor, time) => {
         if (!isMessagesLoading) {
             setMessagesLoading(true);
             console.log('dostalem request dodania nowej wiadomosci');
@@ -75,7 +77,8 @@ const Room = () => {
                 author: userName,
                 type,
                 message,
-                chatColor
+                chatColor,
+                time
             }
             const messagesCopy = messages;
             messagesCopy.push(newMessage);
@@ -84,7 +87,6 @@ const Room = () => {
         }
     };
 
-    const textBoxValue = React.createRef();
     const sendMessage = () => {
         const value = textBoxValue.current.value;
         if (value.length < 6) {
@@ -92,7 +94,8 @@ const Room = () => {
         }
         setButtonIsActive(false);
         const type = "message"
-        socket.emit('rooms:send-message', type, value, user.name, user.room, user.chatColor);
+        const time = Date.now();
+        socket.emit('rooms:send-message', type, value, user.name, user.room, user.chatColor, time);
         textBoxValue.current.value = ""
         setTimeout(() => {
             setButtonIsActive(true);
@@ -114,6 +117,8 @@ const Room = () => {
                         <MessageText style={{ backgroundColor: message.chatColor }}>
                             <Author>{message.author}</Author>
                             {message.message}
+                            <Time>{timeConverter(message.time)}</Time>
+
                         </MessageText>
                     </React.Fragment>
                 )
@@ -124,6 +129,7 @@ const Room = () => {
                         <MessageText style={{ backgroundColor: message.chatColor }} gray>
                             <Author gray>{message.author}</Author>
                             {message.message}
+                            <Time gray>{timeConverter(message.time)}</Time>
                         </MessageText>
                         <MessageIcon style={{ backgroundColor: message.chatColor }} gray>
                             {/* todo */}
@@ -179,6 +185,7 @@ const Room = () => {
                         <MessageText style={{ backgroundColor: message.chatColor }}>
                             <Author>{message.author}</Author>
                             {message.message}
+                            <Time>{timeConverter(message.time)}</Time>
                         </MessageText>
                     </React.Fragment>
                 )
@@ -189,6 +196,7 @@ const Room = () => {
                         <MessageText style={{ backgroundColor: message.chatColor }} gray>
                             <Author gray>{message.author}</Author>
                             {message.message}
+                            <Time gray>{timeConverter(message.time)}</Time>
                         </MessageText>
                         <MessageIcon style={{ backgroundColor: message.chatColor }} gray>
                             {/* todo */}
@@ -265,6 +273,7 @@ const Room = () => {
                     <div>
                         <Textarea ref={textBoxValue} value={textBoxValue.current} />
                     </div>
+
                     <div>
                         <Button disabled={!buttonIsActive} onClick={sendMessage}>Send a message</Button>
                     </div>

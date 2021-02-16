@@ -52,6 +52,11 @@ const Name = (props) => {
             // Ustawiamy User, dzieki temu mamy dane w contextcie i możemy korzystac na przestrzeni całej aplikacji. Do momentu gdy nie jest wypełniony wyświetlamy ten komponent.
             socketContext.setUser(newUser);
         })
+
+        socket.on('users:create-failed', (user) => {
+            toast.warn("🦄 Somebody with that name (" + user.name + ") is connected.");
+            socketContext.setUser(null);
+        });
     }, [socket]);
 
     return (

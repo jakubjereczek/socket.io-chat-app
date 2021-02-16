@@ -47,7 +47,7 @@ const RoomsList = () => {
                 {!isLoading && data.map((room, index) => (
                     <ListElement>
                         <div>
-                            <TitleBold>Room {index}</TitleBold>
+                            <TitleBold>Room {index + 1}</TitleBold>
                             <Title small>{room.name}</Title>
                         </div>
                         <div>

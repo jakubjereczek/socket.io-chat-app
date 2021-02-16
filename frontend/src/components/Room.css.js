@@ -67,12 +67,14 @@ export const MessageIcon = styled.div`
 `
 
 export const MessageText = styled.div`
+    position: relative;
     display: flex;
     flex-direction: column;
     width: auto;
     background-color: ${props => props.gray ? "#808080" : props => props.theme.dark_light};
     border-radius: 10px;
     padding: 10px;
+    padding-bottom: 20px;
     width: 100%;
     min-width: 0;
     /* max-width: calc(100% - 94px); // 64 + plus margin, padding */
@@ -85,6 +87,7 @@ export const MessageText = styled.div`
     }
     @media (max-width: 576px) {
         max-width: 200px;
+        padding-bottom: 10px;
     }
     
 
@@ -119,6 +122,22 @@ export const Line = styled.div`
     border-bottom: 2px ${props => props.theme.dark_light} dotted;
     text-align: center;
     margin-bottom: 20px;
+`
+
+export const Time = styled.p`
+    position: absolute;
+    color: #fff;
+    bottom: 0px;
+    font-size: 0.85rem;
+    font-weight: 300;
+    left: ${props => props.gray ? "10px" : "auto"};
+    right: ${props => props.gray ? "auto" : "10px"};
+
+    @media (max-width: 576px) {
+        font-size: 1rem;
+    }
+
+    
 `
 
 export const ScrollHiddenElement = styled.div`

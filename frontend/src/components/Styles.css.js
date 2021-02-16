@@ -26,6 +26,7 @@ export const Textarea = styled.textarea`
     border-radius: 10px;
     margin: 5px 0;
     color: #808080;
+    resize: none;
 `
 
 export const Button = styled.button`
