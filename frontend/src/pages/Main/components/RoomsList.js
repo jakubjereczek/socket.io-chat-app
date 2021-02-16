@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ListWrapper, ListElement } from './RoomsList.css';
-import { Title, Button, TitleBold, TitleThin } from './Styles.css'
+import { Title, Button, TitleBold, TitleThin } from 'components/Styles.css'
 
 import { FaCalendarTimes, FaChalkboardTeacher, FaCog } from 'react-icons/fa';
 
-import { useSocket } from '../contexts/SocketContext';
+import { useSocket } from 'contexts/SocketContext';
 import { toast } from 'react-toastify';
 import { useHistory } from "react-router-dom";
 

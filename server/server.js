@@ -14,15 +14,11 @@ const io = require('socket.io')(server, options);
 // handlers
 const registerRoomsHandlers = require('./events/roomsHandler');
 const registerUsersHandlers = require('./events/usersHandler');
-const registerDisconnect = require('./events/disconnect');
 
 const onConnection = (socket) => {
     registerRoomsHandlers(io, socket);
     registerUsersHandlers(io, socket);
     console.log(' %s sockets connected', io.engine.clientsCount);
-
-    // user disconnect closing card in browser
-    registerDisconnect(io, socket);
 }
 
 io.on("connection", onConnection);

@@ -16,15 +16,16 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { MainWrapper } from './components/Styles.css'
 
-import { Name, Profil, RoomsList, Popup, Room } from './components';
-import { useSocket } from './contexts/SocketContext';
+import { Name, Profil, RoomsList, Popup } from './components';
+import { Room, Main } from './pages';
+// import { useSocket } from './contexts/SocketContext';
 
 toast.configure();
 
 function App() {
 
-  const socketContext = useSocket();
-  const user = socketContext.user;
+  // const socketContext = useSocket();
+  // const user = socketContext.user;
 
   const [isActivePopup, setIsActivePopup] = useState(false);
   const [popupContent, setPopupContent] = useState({
@@ -53,7 +54,7 @@ function App() {
           <Router>
             <Switch>
               <Route exact path="/" >
-                {!user && <Name />}
+                {/* {!user && <Name />}
                 <MainWrapper>
                   {user && (
                     <React.Fragment>
@@ -61,7 +62,8 @@ function App() {
                       <RoomsList />
                     </React.Fragment>
                   )}
-                </MainWrapper>
+                </MainWrapper> */}
+                <Main changeActivePopup={changeActivePopup} changePopUpContent={changePopUpContent} />
               </Route>
               <Route path="/room/:id">
                 <MainWrapper>

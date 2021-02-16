@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Wrapper, HeaderWrapper, DescribeWrapper } from './Profil.css';
-import { Title, Input, Button, TitleBold, TitleThin } from './Styles.css'
-import { useSocket } from '../contexts/SocketContext';
+import { Title, Input, Button, TitleBold, TitleThin } from 'components/Styles.css'
+import { useSocket } from 'contexts/SocketContext';
 import { toast } from 'react-toastify';
 import { useHistory } from "react-router-dom";
 
-import { useGeneratorId } from '../hooks';
+import { useGeneratorId } from 'hooks';
 
 const Profil = ({ changeActivePopup, changePopUpContent, isActivePopup }) => {
 

@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Wrapper, WrapperInside } from './Name.css'
-import { TitleBold, TitleThin, Title, Input, Button } from './Styles.css'
+import { TitleBold, TitleThin, Title, Input, Button } from 'components/Styles.css'
 
-import { useSocket } from '../contexts/SocketContext';
+import { useSocket } from 'contexts/SocketContext';
 import { toast } from 'react-toastify';
 
-import { useGeneratorColor } from '../hooks';
+import { useGeneratorColor } from 'hooks';
 
-
-const Name = (props) => {
+const Name = () => {
 
     const socketContext = useSocket();
     const socket = socketContext.socket;

@@ -1,5 +1,3 @@
-import { Time } from "../components/Room.css";
-
 export default (time) => {
     const date = new Date(time);
     let hours = date.getHours() > 9 ? date.getHours() : `0${date.getHours()}`;

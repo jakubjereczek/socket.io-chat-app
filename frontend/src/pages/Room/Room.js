@@ -1,18 +1,16 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useHistory } from "react-router-dom";
 
-import Picker from 'emoji-picker-react';
+import { Wrapper, Header, Containter, InputContainer, ScrollHiddenElement } from './Room.css';
+import { Button, TitleBold, TitleThin, Textarea } from 'components/Styles.css'
 
-import { Wrapper, Header, Containter, MessageContainer, Message, MessageIcon, MessageText, Author, InputContainer, Line, ScrollHiddenElement, Time, EmojiContainer, EmojiClose } from './Room.css';
-import { Title, Input, Button, TitleBold, TitleThin, Textarea } from './Styles.css'
-
-import { FaRegCaretSquareDown, GrEmoji } from 'react-icons/fa';
 import { FcLike } from "react-icons/fc";
 
 import { toast } from 'react-toastify';
+import { useSocket } from 'contexts/SocketContext';
 
-import { useSocket } from '../contexts/SocketContext';
-import timeConverter from '../utils/timeConverter';
+import MessagesList from './components/MessagesList';
+import EmojiContainer from './components/EmojiContainer';
 
 
 const Room = () => {
@@ -22,7 +20,6 @@ const Room = () => {
     const history = useHistory();
     let { id } = useParams();
 
-    // all data about room (with messanges)
     const [data, setData] = useState(undefined);
     const [messages, setMessages] = useState([]);
     const [lastestMessages, setLatestMessanges] = useState([]);
@@ -34,20 +31,10 @@ const Room = () => {
     const [emojiContainerVisible, setEmojiContainerVisible] = useState(false);
 
     const textBoxValue = React.createRef();
-
-    const [chosenEmoji, setChosenEmoji] = useState(null);
-
     const scroll = useRef();
     const container = useRef();
 
-    const onEmojiClick = (event, emojiObject) => {
-        setChosenEmoji(emojiObject);
-        textBoxValue.current.value += emojiObject.emoji;
-        console.log('chosenEmoji' + emojiObject.emoji);
-    };
-
     const toggleEmojiContainer = () => setEmojiContainerVisible(!emojiContainerVisible);
-
 
     // Przy pierwszym wejsciu oraz przy wejsciu, wyjsciu innych osobnikow.
     const handleInitRoom = useCallback((room) => {
@@ -59,7 +46,7 @@ const Room = () => {
         // inicjalizacja wiadomosci, ktore zostały napisane przed dołączniem 
         setLatestMessanges(messages);
         // setIsLoading(false);
-    });
+    }, []);
 
 
     useEffect(() => {
@@ -71,10 +58,10 @@ const Room = () => {
         socket.on('rooms:get-sent-message', changeMessanges);
         socket.on('rooms:get-sent-messages-previously', handleMessageList)
 
-
         return () => {
             socket.off('rooms:get-rooms', handleInitRoom);
             socket.off('rooms:get-sent-message', changeMessanges);
+            socket.off('rooms:get-sent-messages-previously', handleMessageList)
         }
     }, [])
 
@@ -120,64 +107,25 @@ const Room = () => {
         }, [300]) // 0.3 sek przerwy przed nastepna wiadomoscia
     }
 
-    const RenderedMessages = useMemo(() => messages.map((message, index) => {
-
-        if (message.type === "message") {
-            let Content;
-            let gray;
-            if (message.author === user.name) {
-                gray = false;
-                Content = (
-                    <React.Fragment>
-                        <MessageIcon style={{ backgroundColor: message.chatColor }} >
-                            {/* todo */}
-                        </MessageIcon>
-                        <MessageText style={{ backgroundColor: message.chatColor }}>
-                            <Author>{message.author}</Author>
-                            {message.message}
-                            <Time>{timeConverter(message.time)}</Time>
-
-                        </MessageText>
-                    </React.Fragment>
-                )
-            } else {
-                gray = true;
-                Content = (
-                    <React.Fragment>
-                        <MessageText style={{ backgroundColor: message.chatColor }} gray>
-                            <Author gray>{message.author}</Author>
-                            {message.message}
-                            <Time gray>{timeConverter(message.time)}</Time>
-                        </MessageText>
-                        <MessageIcon style={{ backgroundColor: message.chatColor }} gray>
-                            {/* todo */}
-                        </MessageIcon>
-                    </React.Fragment>
-                )
-            }
-            return (
-                <MessageContainer gray={gray}>
-                    <Message>
-                        {Content}
-                    </Message>
-                </MessageContainer>
+    const MessagesListComponent = (
+        (messages && lastestMessages) ?
+            (
+                // Regenerownanie w przypadku pojawienia sie nowej wiadmosci
+                !isMessagesLoading && <MessagesList initMessages={lastestMessages} messages={messages} />
+            ) :
+            (
+                <h2>Data is loading...</h2>
             )
-        } else if (message.type === "notification") {
-            // wyswietlenie notyfikacji o dolaczeniu lub wyjsciu innej osoby. Twoja wiadomosc nie wyswietli się Tobie, a innym tak.
-            if (message.author !== user.name) {
-                console.log(message);
-                return (
-                    <MessageContainer gray>
-                        <Message>
-                            <MessageText style={{ backgroundColor: message.chatColor }} gray>{message.author} {message.message}</MessageText>
-                        </Message>
-                    </MessageContainer>
-                )
-            }
-        }
-        // to do: is typing..
-    }), [changeMessanges]);
+    )
 
+    const EmojiContainerComponent = useMemo(() => (
+        (textBoxValue != null) && (
+            <EmojiContainer emojiContainerVisible={emojiContainerVisible} textBoxValue={textBoxValue} toggleEmojiContainer={toggleEmojiContainer} />
+        )
+    ), [textBoxValue, emojiContainerVisible])
+
+
+    // UserList
     const ActiveUsers = (
         data && data.users.map((user, index) => {
             return (
@@ -185,59 +133,12 @@ const Room = () => {
         })
     );
 
-    // Wiadomości napisane przed dolączniem użytkownika.
-    const LatestMess = (
-        lastestMessages && lastestMessages.map(message => {
-            let Content;
-            let gray;
-            if (message.type !== "message") {
-                return;
-            }
-            if (message.author === user.name) {
-                gray = false;
-                Content = (
-                    <React.Fragment>
-                        <MessageIcon style={{ backgroundColor: message.chatColor }}>
-                            {/* todo */}
-                        </MessageIcon>
-                        <MessageText style={{ backgroundColor: message.chatColor }}>
-                            <Author>{message.author}</Author>
-                            {message.message}
-                            <Time>{timeConverter(message.time)}</Time>
-                        </MessageText>
-                    </React.Fragment>
-                )
-            } else {
-                gray = true;
-                Content = (
-                    <React.Fragment>
-                        <MessageText style={{ backgroundColor: message.chatColor }} gray>
-                            <Author gray>{message.author}</Author>
-                            {message.message}
-                            <Time gray>{timeConverter(message.time)}</Time>
-                        </MessageText>
-                        <MessageIcon style={{ backgroundColor: message.chatColor }} gray>
-                            {/* todo */}
-                        </MessageIcon>
-                    </React.Fragment>
-                )
-            }
-            return (
-                <MessageContainer gray={gray}>
-                    <Message>
-                        {Content}
-                    </Message>
-                </MessageContainer>
-            )
-        })
-    )
-
     useEffect(() => {
         // Scrollowanie od ostatniej wiadomosci.
         if (!userIsReadingMessagesAbove) {
             scroll.current && scroll.current.scrollIntoView({ behavior: "auto" }) // przejdzie do ostatniej wiadomosci
         }
-    }, [RenderedMessages]);
+    }, [MessagesListComponent]);
 
     if (!user || user.room !== id) {
         toast.warn("🦄 You're not allowed to connect to this chat or chat isn't exist");
@@ -279,31 +180,19 @@ const Room = () => {
                     </div>
                 </Header>
                 <Containter ref={container} onScroll={scrollManager}>
-                    {LatestMess}
-                    {/* 1 wiadomosc to powiadomienie o dołączeniu */}
-                    {LatestMess.length > 1 ? <Line>
-                        <TitleThin small>Chat messages above has been written before you joined the room</TitleThin>
-                    </Line> : null}
-                    {RenderedMessages}
+                    {MessagesListComponent}
                     <ScrollHiddenElement ref={scroll}>last</ScrollHiddenElement>
                 </Containter>
                 <InputContainer>
                     <div>
                         <Textarea ref={textBoxValue} value={textBoxValue.current} />
-                        <FcLike onClick={toggleEmojiContainer} />
+                        <FcLike style={{ fontSize: '42px' }} onClick={toggleEmojiContainer} />
                     </div>
-                    {/* to do wyswietlanie i wylaczanie emoj */}
                     <div>
                         <Button disabled={!buttonIsActive} onClick={sendMessage}>Send a message</Button>
                     </div>
                 </InputContainer>
-                {emojiContainerVisible ? (
-                    <EmojiContainer>
-                        {/* Emoji picker */}
-                        <Picker onEmojiClick={onEmojiClick} pickerStyle={{ width: '300px', height: '300px' }} />
-                        <EmojiClose onClick={toggleEmojiContainer}><FaRegCaretSquareDown /></EmojiClose>
-                    </EmojiContainer>
-                ) : null}
+                {EmojiContainerComponent}
             </Wrapper >
         )
     );

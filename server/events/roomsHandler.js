@@ -144,7 +144,6 @@ module.exports = (io, socket) => {
     const rooms_get_sent_message_req = (id) => {
         let findedRoom = data.getRoom(id, data.rooms);
         if (findedRoom) {
-            console.log(findedRoom.messages);
             socket.emit('rooms:get-sent-messages-previously', findedRoom.messages);
         }
     }
