@@ -2,7 +2,7 @@ const data = require('../data');
 
 module.exports = (io, socket) => {
 
-    const rooms_create = ({ id, userId, name, private, created_by, created_time, users }) => {
+    const rooms_create = ({ id, userId, name, private, password, created_by, created_time, users }) => {
 
         const usersCopy = data.users;
 
@@ -10,11 +10,13 @@ module.exports = (io, socket) => {
             id: "room" + id, // id pokoju to "room"+ generowany losowo ciag 12 znakow
             name,
             private,
+            password,
             created_by,
             created_time,
             users,
             messages: []
         }
+        console.log("room", room);
         const findedUser = data.getUser(userId, usersCopy);
         if (findedUser && findedUser.room) {
             return;

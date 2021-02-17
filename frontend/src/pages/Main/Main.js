@@ -19,7 +19,7 @@ const Main = ({ changeActivePopup, changePopUpContent }) => {
                 {user && (
                     <React.Fragment>
                         <Profil changeActivePopup={changeActivePopup} changePopUpContent={changePopUpContent} />
-                        <RoomsList />
+                        <RoomsList changeActivePopup={changeActivePopup} changePopUpContent={changePopUpContent} />
                     </React.Fragment>
                 )}
             </MainWrapper>

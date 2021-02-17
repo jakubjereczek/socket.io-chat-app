@@ -54,15 +54,6 @@ function App() {
           <Router>
             <Switch>
               <Route exact path="/" >
-                {/* {!user && <Name />}
-                <MainWrapper>
-                  {user && (
-                    <React.Fragment>
-                      <Profil changeActivePopup={changeActivePopup} changePopUpContent={changePopUpContent} />
-                      <RoomsList />
-                    </React.Fragment>
-                  )}
-                </MainWrapper> */}
                 <Main changeActivePopup={changeActivePopup} changePopUpContent={changePopUpContent} />
               </Route>
               <Route path="/room/:id">

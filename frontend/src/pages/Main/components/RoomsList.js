@@ -8,8 +8,10 @@ import { useSocket } from 'contexts/SocketContext';
 import { toast } from 'react-toastify';
 import { useHistory } from "react-router-dom";
 
+import PasswordPopup from './popups/PasswordPopup';
 
-const RoomsList = () => {
+
+const RoomsList = ({ changeActivePopup, changePopUpContent }) => {
 
     const socketContext = useSocket();
     const socket = socketContext.socket;
@@ -41,6 +43,38 @@ const RoomsList = () => {
         }
     }, []);
 
+    // W przypadku gdy pokoj nie jest publiczny.
+    const checkPassword = (room, password) => {
+        console.log('room', room);
+        console.log('password', password);
+        if (room.password !== password) {
+            return toast.warn("🦄 Password is not correct!");
+        }
+        joinProcess(room);
+        // + wylaczenie popupu
+        changeActivePopup(false);
+    }
+
+    const joinToRoom = (room) => {
+        if (!room.private) {
+            // zmiana najpierw w context
+            joinProcess(room);
+        } else {
+            // popup z haslem - a potem wywolujemy funkcje wyzej 
+            PasswordPopup(changeActivePopup, changePopUpContent, checkPassword, room)
+        }
+    }
+
+    const joinProcess = (room) => {
+        const newUser = {
+            ...user,
+            room: room.id
+        }
+        socketContext.setUser(newUser)
+        socket.emit('rooms:join', room.id, user.id);
+        history.push("/room/" + room.id);
+    }
+
     return (
         <React.Fragment>
             <ListWrapper>
@@ -55,16 +89,7 @@ const RoomsList = () => {
                             <TitleThin small><span><FaCalendarTimes /> Created by: {room.created_by}</span></TitleThin>
                             <TitleThin small><span><FaChalkboardTeacher /> Online: {room.users.length}</span></TitleThin>
                             <TitleThin small><span><FaCog /> Password: {room.private ? "yes" : "no"}</span></TitleThin>
-                            <Button onClick={() => {
-                                // zmiana najpierw w context
-                                const newUser = {
-                                    ...user,
-                                    room: room.id
-                                }
-                                socketContext.setUser(newUser)
-                                socket.emit('rooms:join', room.id, user.id);
-                                history.push("/room/" + room.id);
-                            }} gray small>Join to channel</Button>
+                            <Button onClick={() => joinToRoom(room)} gray small>Join to channel</Button>
                         </div>
                     </ListElement>
                 ))}

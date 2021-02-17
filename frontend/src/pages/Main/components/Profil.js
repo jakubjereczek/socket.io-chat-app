@@ -7,6 +7,8 @@ import { useHistory } from "react-router-dom";
 
 import { useGeneratorId } from 'hooks';
 
+import CreateRoomPopup from './popups/CreateRoomPopup';
+
 const Profil = ({ changeActivePopup, changePopUpContent, isActivePopup }) => {
 
     const socketContext = useSocket();
@@ -44,6 +46,8 @@ const Profil = ({ changeActivePopup, changePopUpContent, isActivePopup }) => {
     }, []);
 
     const nameRoom = React.createRef();
+    const password = React.createRef();
+
     const createRoom = () => {
         console.log('user.room ', user.room);
         if (user.room !== "") {
@@ -54,12 +58,14 @@ const Profil = ({ changeActivePopup, changePopUpContent, isActivePopup }) => {
             return toast.warn("🦄 Room name should have less than 32 characters!");
         }
         // id - losowy ciag znakow 12 generowany przez hook
+        console.log('password.current.value ', password.current.value);
         const room = {
             id: id,
             userId: user.id,
             name: nameRoom.current.value,
             // to do
-            private: false,
+            private: password.current.value ? true : false,
+            password: password.current.value,
             created_by: user.name,
             created_time: Date.now(),
             // users: [user.id]
@@ -68,26 +74,10 @@ const Profil = ({ changeActivePopup, changePopUpContent, isActivePopup }) => {
         socketContext.socket.emit('rooms:create', room);
     }
 
-    const buttonHandler = () => {
-        // Treść popupa
-        const context = (
-            <React.Fragment>
-                <Title small>Name</Title>
-                {/* to do: checkbox z potem do hasla + input po wybraniu tej opcji:) */}
-                <Input ref={nameRoom} />
-                <Title small>Submit</Title>
-                <Button onClick={createRoom}>Create a room</Button>
-            </React.Fragment>
-        );
 
-        const popupContext = {
-            title: "Add new room",
-            context
-        }
-        changePopUpContent(popupContext)
-        // visible
-        changeActivePopup(true);
-    }
+    // Logika w CreateRoomPopup
+    const buttonHandler = () => CreateRoomPopup(changeActivePopup, changePopUpContent, createRoom, nameRoom, password);
+
 
     return (
         <React.Fragment>
