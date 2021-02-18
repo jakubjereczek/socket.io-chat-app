@@ -9,9 +9,9 @@ export const Wrapper = styled.div`
 
 export const Container = styled.div`
     position: absolute;
-    left: calc(50% - 35%);
-    top: calc(50% - 35%);
-    width: 70%;
+    left: calc(50% - 450px);
+    top: calc(50% - 250px);
+    width: 900px;
     height: 70%;
     background-color: #fff;
     border: 2px solid ${props => props.theme.dark_light};

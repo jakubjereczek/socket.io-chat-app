@@ -19,6 +19,7 @@ export const GlobalStyle = createGlobalStyle`
         width: 100%;
         display: flex;
         justify-content: center;
+        /* background-color: ${props => props.theme.dark_light}; */
     }
     div.app.blur {
         filter: blur(2px);

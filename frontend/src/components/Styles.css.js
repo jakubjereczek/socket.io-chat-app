@@ -22,15 +22,19 @@ export const Textarea = styled.textarea`
     width: 100%;
     padding: 5px 10px;
     font-size: 1.2rem;
-    border: 2px solid #808080;
+    border-style: none; 
+    border-color: Transparent;
     border-radius: 10px;
-    margin: 5px 0;
+    margin: 5px 10px;
     color: #808080;
     resize: none;
+
+    &:focus {
+        outline: none !important;
+    }
 `
 
 export const Button = styled.button`
-
     width: 100%;
     background-color: ${props => props.gray ? "#808080" : props => props.theme.dark_light};
     padding: 10px 10px;
@@ -51,13 +55,13 @@ export const MainWrapper = styled.div`
 
 export const TitleBold = styled.p`
     font-weight: 600;
-    font-size: ${props => props.small ? "1.2rem" : "1.8rem"};
+    font-size: ${props => props.small ? "1.2rem" : "2rem"};
     margin: 0 5px;
 `;
 
 export const TitleThin = styled.p`
     font-weight: 200;
-    font-size: ${props => props.small ? "1.2rem" : "1.8rem"};
+    font-size: ${props => props.small ? "1.2rem" : "2rem"};
     margin: 0 5px;
 
     & > span {

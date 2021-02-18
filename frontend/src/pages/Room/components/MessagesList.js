@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 
-import { MessageContainer, Message, MessageIcon, MessageText, Author, Line, Time } from '../Room.css'
+import { MessageContainer, Message, MessageIcon, MessageText, Author, Line, Time, MessageTriangle } from '../Room.css'
 import { TitleThin } from 'components/Styles.css'
 
 import { useSocket } from 'contexts/SocketContext';
@@ -15,56 +15,8 @@ const MessagesList = ({ initMessages, messages }) => {
     const socketContext = useSocket();
     const user = socketContext.user;
 
-    // Wiadomości napisane przed dolączniem użytkownika.
-    const LatestMess = useMemo(() => (
-        initMessages.map(message => {
-            let Content;
-            let gray;
-            if (message.type !== "message") {
-                return;
-            }
-            if (message.author === user.name) {
-                gray = false;
-                Content = (
-                    <React.Fragment>
-                        <MessageIcon style={{ backgroundColor: message.chatColor }}>
-                            {/* todo */}
-                        </MessageIcon>
-                        <MessageText style={{ backgroundColor: message.chatColor }}>
-                            <Author>{message.author}</Author>
-                            {message.message}
-                            <Time>{timeConverter(message.time)}</Time>
-                        </MessageText>
-                    </React.Fragment>
-                )
-            } else {
-                gray = true;
-                Content = (
-                    <React.Fragment>
-                        <MessageText style={{ backgroundColor: message.chatColor }} gray>
-                            <Author gray>{message.author}</Author>
-                            {message.message}
-                            <Time gray>{timeConverter(message.time)}</Time>
-                        </MessageText>
-                        <MessageIcon style={{ backgroundColor: message.chatColor }} gray>
-                            {/* todo */}
-                        </MessageIcon>
-                    </React.Fragment>
-                )
-            }
-            return (
-                <MessageContainer gray={gray}>
-                    <Message>
-                        {Content}
-                    </Message>
-                </MessageContainer>
-            )
-        })
-    ), [initMessages]);
-
-
-    const RenderedMessages = useMemo(() =>
-        messages.map((message, index) => {
+    const renderMessages = (messages) => (
+        messages && messages.map((message, index) => {
             if (message.type === "message") {
                 let Content;
                 let gray;
@@ -76,8 +28,9 @@ const MessagesList = ({ initMessages, messages }) => {
                                 {/* todo */}
                             </MessageIcon>
                             <MessageText style={{ backgroundColor: message.chatColor }}>
+                                <MessageTriangle style={{ backgroundColor: message.chatColor }} />
                                 <Author>{message.author}</Author>
-                                {message.message}
+                                <span>{message.message}</span>
                                 <Time>{timeConverter(message.time)}</Time>
 
                             </MessageText>
@@ -88,8 +41,9 @@ const MessagesList = ({ initMessages, messages }) => {
                     Content = (
                         <React.Fragment>
                             <MessageText style={{ backgroundColor: message.chatColor }} gray>
+                                <MessageTriangle gray style={{ backgroundColor: message.chatColor }} />
                                 <Author gray>{message.author}</Author>
-                                {message.message}
+                                <span>{message.message}</span>
                                 <Time gray>{timeConverter(message.time)}</Time>
                             </MessageText>
                             <MessageIcon style={{ backgroundColor: message.chatColor }} gray>
@@ -108,7 +62,6 @@ const MessagesList = ({ initMessages, messages }) => {
             } else if (message.type === "notification") {
                 // wyswietlenie notyfikacji o dolaczeniu lub wyjsciu innej osoby. Twoja wiadomosc nie wyswietli się Tobie, a innym tak.
                 if (message.author !== user.name) {
-                    console.log(message);
                     return (
                         <MessageContainer gray>
                             <Message>
@@ -119,7 +72,17 @@ const MessagesList = ({ initMessages, messages }) => {
                 }
             }
             // to do: is typing..
-        }), [messages]);
+        }));
+
+    //Wiadomości napisane przed dolączniem użytkownika.
+    const LatestMess = useMemo(() => (
+        renderMessages(initMessages)
+    ), [initMessages]);
+
+
+    const RenderedMessages = useMemo(() => (
+        renderMessages(messages)
+    ), [messages]);
 
     return (
         <React.Fragment>

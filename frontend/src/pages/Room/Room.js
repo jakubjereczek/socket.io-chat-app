@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useHistory } from "react-router-dom";
 
-import { Wrapper, Header, Containter, InputContainer, ScrollHiddenElement } from './Room.css';
-import { Button, TitleBold, TitleThin, Textarea } from 'components/Styles.css'
-
-import { FcLike } from "react-icons/fc";
+import { Wrapper, Header, Containter, InputContainer, ScrollHiddenElement, Border, Online, ExitIcon, SendButton, SendIcon, EmojiIcon } from './Room.css';
+import { TitleThin, Textarea } from 'components/Styles.css'
 
 import { toast } from 'react-toastify';
 import { useSocket } from 'contexts/SocketContext';
 
 import MessagesList from './components/MessagesList';
 import EmojiContainer from './components/EmojiContainer';
+import ActiveUsers from './components/ActiveUsers';
 
 
 const Room = () => {
@@ -55,12 +54,12 @@ const Room = () => {
         socket.emit('rooms:get-sent-messages-request', id);
 
         socket.on('rooms:get-rooms', handleInitRoom);
-        socket.on('rooms:get-sent-message', changeMessanges);
+        socket.on('rooms:get-sent-message', addNewMessageResponse);
         socket.on('rooms:get-sent-messages-previously', handleMessageList)
 
         return () => {
             socket.off('rooms:get-rooms', handleInitRoom);
-            socket.off('rooms:get-sent-message', changeMessanges);
+            socket.off('rooms:get-sent-message', addNewMessageResponse);
             socket.off('rooms:get-sent-messages-previously', handleMessageList)
         }
     }, [])
@@ -74,10 +73,10 @@ const Room = () => {
         }
     }
 
-    const changeMessanges = (type, message, userName, chatColor, time) => {
+    const addNewMessageResponse = (type, message, userName, chatColor, time) => {
         if (!isMessagesLoading) {
             setMessagesLoading(true);
-            console.log('dostalem request dodania nowej wiadomosci');
+
             const newMessage = {
                 author: userName,
                 type,
@@ -92,19 +91,29 @@ const Room = () => {
         }
     };
 
-    const sendMessage = () => {
+    const sendNewMessageRequest = () => {
         const value = textBoxValue.current.value;
         if (value.length < 6) {
             return toast.warn("🦄 Message should have 6 chars or more!");
         }
+
         setButtonIsActive(false);
-        const type = "message"
-        const time = Date.now();
-        socket.emit('rooms:send-message', type, value, user.name, user.room, user.chatColor, time);
+        socket.emit('rooms:send-message', "message", value, user.name, user.room, user.chatColor, Date.now());
         textBoxValue.current.value = ""
         setTimeout(() => {
             setButtonIsActive(true);
         }, [300]) // 0.3 sek przerwy przed nastepna wiadomoscia
+    }
+
+    const exitRoom = () => {
+        const newUser = {
+            ...user,
+            room: ""
+        }
+        socketContext.setUser(newUser)
+        socket.emit('rooms:leave', user.id);
+        toast.success("🦄 You left the chat");
+        history.push("/");
     }
 
     const MessagesListComponent = (
@@ -124,14 +133,6 @@ const Room = () => {
         )
     ), [textBoxValue, emojiContainerVisible])
 
-
-    // UserList
-    const ActiveUsers = (
-        data && data.users.map((user, index) => {
-            return (
-                <span key={index}>{user.name}{data.users.length - 1 === index ? "" : ", "}</span>)
-        })
-    );
 
     useEffect(() => {
         // Scrollowanie od ostatniej wiadomosci.
@@ -158,38 +159,30 @@ const Room = () => {
                         <div>
                             {data && (
                                 <React.Fragment>
-                                    <TitleBold>{data.name}</TitleBold>
-                                    {/* to do: wyswietlenie kilku + hover ktory pokazuje wszystkich */}
-                                    <TitleThin small>Online: {data.users.length} ({ActiveUsers})</TitleThin>
+                                    <TitleThin><span>{data.name}</span></TitleThin>
+                                    <TitleThin small><Online /> <ActiveUsers users={data.users} />
+                                    </TitleThin>
                                 </React.Fragment>
                             )}
-
                         </div>
                     </div>
-                    <div>
-                        <Button onClick={() => {
-                            const newUser = {
-                                ...user,
-                                room: ""
-                            }
-                            socketContext.setUser(newUser)
-                            socket.emit('rooms:leave', user.id);
-                            toast.success("🦄 You left the chat");
-                            history.push("/");
-                        }} gray>Exit</Button>
+                    <div onClick={exitRoom}>
+                        <ExitIcon />
                     </div>
                 </Header>
+                <Border />
                 <Containter ref={container} onScroll={scrollManager}>
                     {MessagesListComponent}
                     <ScrollHiddenElement ref={scroll}>last</ScrollHiddenElement>
                 </Containter>
+                <Border />
                 <InputContainer>
                     <div>
                         <Textarea ref={textBoxValue} value={textBoxValue.current} />
-                        <FcLike style={{ fontSize: '42px' }} onClick={toggleEmojiContainer} />
+                        <EmojiIcon onClick={toggleEmojiContainer} />
                     </div>
                     <div>
-                        <Button disabled={!buttonIsActive} onClick={sendMessage}>Send a message</Button>
+                        <SendButton disabled={!buttonIsActive} onClick={sendNewMessageRequest}><SendIcon /></SendButton>
                     </div>
                 </InputContainer>
                 {EmojiContainerComponent}
