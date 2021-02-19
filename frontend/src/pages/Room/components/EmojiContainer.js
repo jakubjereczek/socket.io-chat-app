@@ -14,6 +14,8 @@ const EmojiContainer = ({ emojiContainerVisible, textBoxValue, toggleEmojiContai
     const onEmojiClick = (event, emojiObject) => {
         setChosenEmoji(emojiObject);
         textBoxValue.current.value += emojiObject.emoji;
+        //to do: typingMessageHandler();
+        // is typing w przypadku dodawania emotek
     };
 
     return (

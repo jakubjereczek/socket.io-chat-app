@@ -15,7 +15,7 @@ const MessagesList = ({ initMessages, messages, typingMessages }) => {
     const socketContext = useSocket();
     const user = socketContext.user;
 
-    console.log('typingMessages', typingMessages);
+    //console.log('typingMessages', typingMessages);
 
     const renderMessages = (messages, withoutTyping) => (
         messages && messages.map((message, index) => {

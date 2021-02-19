@@ -10,6 +10,7 @@ import { useSocket } from 'contexts/SocketContext';
 import MessagesList from './components/MessagesList';
 import EmojiContainer from './components/EmojiContainer';
 import ActiveUsers from './components/ActiveUsers';
+import Typing from './components/Typing';
 
 
 const Room = () => {
@@ -29,8 +30,6 @@ const Room = () => {
     const [buttonIsActive, setButtonIsActive] = useState(true);
     const [userIsReadingMessagesAbove, setuserIsReadingMessagesAbove] = useState(false);
     const [emojiContainerVisible, setEmojiContainerVisible] = useState(false);
-    const [userIsTyping, setUserIsTyping] = useState(false);
-    const [userTapingRequest, setUserTapingRequest] = useState(false);
 
     const textBoxValue = React.createRef();
     const scroll = useRef();
@@ -86,99 +85,42 @@ const Room = () => {
     });
 
     const addNewMessageResponse = (type, message, userName, chatColor, time) => {
+        // Refresh - wywoływany gdy usuwamy message: typing.
+        let typingMessagesCopy = typingMessagesLatestValue.current;
 
-        console.log({
+        const newMessage = {
+            author: userName,
             type,
             message,
-            userName,
             chatColor,
             time
-        });
-
-        // Usunięcie wiadomości typing, ktora spowowala akcje usuniecia.
+        }
         if (type === "refresh") {
             setMessagesLoading(true);
-            let typingMessagesCopy = typingMessagesLatestValue.current;
-
             typingMessagesCopy = typingMessagesCopy.filter(message => {
                 console.log(userName, message.author);
-
                 if (message.author === userName && message.type === "typing") {
                     return false;
                 }
                 return true;
             })
-            console.log('PO REFRESHU ' + typingMessagesCopy);
             setTypingMessages(typingMessagesCopy);
             setMessagesLoading(false);
-
-            // Dodanie wiadomosci typing
+            // Dodanie message typing.
         } else if (type === "typing") {
-            let typingMessagesCopy = typingMessagesLatestValue.current; // Nie odsiweza gowno niewiem czemu
-
-
             setMessagesLoading(true);
-            const newMessage = {
-                author: userName,
-                type,
-                message,
-                chatColor,
-                time
-            }
             typingMessagesCopy.push(newMessage);
             setTypingMessages(typingMessagesCopy);
             setMessagesLoading(false);
         } else {
             // Reszta wiadomosci.
             if (!isMessagesLoading) {
-                // Wiadomosc wyslana, a wiec nie pisze.
-                // setUserIsTyping(false);
                 setMessagesLoading(true);
-
-                const newMessage = {
-                    author: userName,
-                    type,
-                    message,
-                    chatColor,
-                    time
-                }
                 const messagesCopy = messages;
                 messagesCopy.push(newMessage);
                 setMessages(messagesCopy);
                 setMessagesLoading(false);
             }
-        }
-    };
-
-    let timer;
-    const typingMessageHandler = () => {
-        if (textBoxValue && textBoxValue.current.value.length > 6) { //
-            setUserIsTyping(true);
-            clearTimeout(timer);
-
-            timeout(userIsTyping);
-            console.log('true');
-        } else {
-            setUserIsTyping(false);
-        }
-    }
-
-    const timeout = (bool) => {
-
-        if (!userTapingRequest) {
-            // Wysłanie requestu z wiadomością o tym, ze użytkownik pisze.
-            socket.emit('rooms:send-message', "typing", "is typing", user.name, user.room, user.chatColor, Date.now());
-        }
-        setUserTapingRequest(true);
-        if (userIsTyping) {
-            timer = setTimeout(() => {
-                console.log('false');
-                setUserIsTyping(bool);
-                setUserTapingRequest(false); // Po czasie - nieprzerwane 3 sekundy bez dodania nowego tekstu.
-
-                // Wysłanie request o usunięcie wiadomości, ze użytkownik pisze.
-                socket.emit('rooms:delete-message', "typing", user.name, user.room);
-            }, 4000)
         }
     };
 
@@ -188,11 +130,8 @@ const Room = () => {
             return toast.warn("🦄 Message should have 6 chars or more!");
         }
 
-        // Sprawdzenie czy istenije wiadomosc isTyppping i usuniecie gdy jest.
+        // Sprawdzenie czy istnieje wiadomosc "type: typing:" i usuniecie jej gdy takowa istnieje.
         socket.emit('rooms:delete-message', "typing", user.name, user.room);
-
-
-
 
         setButtonIsActive(false);
         socket.emit('rooms:send-message', "message", value, user.name, user.room, user.chatColor, Date.now());
@@ -202,34 +141,6 @@ const Room = () => {
         }, [300]) // 0.3 sek przerwy przed nastepna wiadomoscia
     }
 
-
-    // useEffect(() => {
-    //     console.log('SOMEBODY IS TYPING ' + userIsTyping);
-
-    // }, [setUserIsTyping])
-
-    // jeśli jest rowny false to usuwamy msg
-
-    // 1. sprawdzam czy wiadomosc istnieje
-    // 2. usuwam ja z db
-
-    // jesli jest true to wysylamy message
-    // 1. wysylam wiadomosc do bazdy
-    //f (userIsTyping) {
-    // console.log('wysylam req typing');
-    //} else {
-    // // sprawdzam czy wiadomosc istnieje
-    // console.log('nie istnieje sprawdzam');
-    // let exist = false;
-    // typingMessages.forEach(message => {
-    //     if (message.type === "typing" && message.author === user.name) {
-    //         exist = true;
-    //     }
-    // })
-    // if (exist) {
-    //     console.log('request usuniecia');
-    //     socket.emit('rooms:delete-message', "typing", user.name, user.room);
-    // }
     const exitRoom = () => {
         const newUser = {
             ...user,
@@ -257,6 +168,10 @@ const Room = () => {
             <EmojiContainer emojiContainerVisible={emojiContainerVisible} textBoxValue={textBoxValue} toggleEmojiContainer={toggleEmojiContainer} />
         )
     ), [textBoxValue, emojiContainerVisible])
+
+    const TypingComponent = useMemo(() => (
+        <Typing textBoxValue={textBoxValue} user={user} socket={socket} />
+    ), [textBoxValue]);
 
 
     useEffect(() => {
@@ -303,7 +218,7 @@ const Room = () => {
                 <Border />
                 <InputContainer>
                     <div>
-                        <Textarea onChange={typingMessageHandler} ref={textBoxValue} value={textBoxValue.current} />
+                        {TypingComponent}
                         <EmojiIcon onClick={toggleEmojiContainer} />
                     </div>
                     <div>
