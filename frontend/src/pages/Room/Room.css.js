@@ -146,6 +146,34 @@ export const MessageText = styled.div`
     }
 `
 
+export const MessageTypping = styled(MessageText)`
+
+overflow: hidden;
+
+& > span {
+    animation: move 4s linear infinite;
+
+    @keyframes move {
+        0% {
+            opacity: 0.15;
+            transform: scale(1);
+        }
+
+        50% {
+            opacity: 1;
+            transform: scale(1.03);
+        }
+
+        100% {
+            opacity: 0.15;
+            transform: scale(1);
+
+        }
+    }
+
+`;
+
+
 export const MessageTriangle = styled.div`
     position: absolute;
     width: 32px;

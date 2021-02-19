@@ -23,10 +23,9 @@ const ActiveUsers = ({ users }) => {
         })
 
         if (!isListFull) {
-            console.log(result.length);
             return result.length > 64 ? users.length + " " + `${result.substring(0, 64)}...` : users.length + " " + result
         } else {
-            return users.length + " people are online right now. List: " + result;
+            return users.length + " people are online right now. Users: " + result;
         }
     }, [handleList]);
 

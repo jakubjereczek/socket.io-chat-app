@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
 
-import { MessageContainer, Message, MessageIcon, MessageText, Author, Line, Time, MessageTriangle } from '../Room.css'
+import { MessageContainer, Message, MessageIcon, MessageText, Author, Line, Time, MessageTriangle, MessageTypping } from '../Room.css'
 import { TitleThin } from 'components/Styles.css'
 
 import { useSocket } from 'contexts/SocketContext';
 
 import timeConverter from 'utils/timeConverter';
 
-const MessagesList = ({ initMessages, messages }) => {
+const MessagesList = ({ initMessages, messages, typingMessages }) => {
 
     // console.log("init", initMessages);
     // console.log("mess", messages);
@@ -15,7 +15,9 @@ const MessagesList = ({ initMessages, messages }) => {
     const socketContext = useSocket();
     const user = socketContext.user;
 
-    const renderMessages = (messages) => (
+    console.log('typingMessages', typingMessages);
+
+    const renderMessages = (messages, withoutTyping) => (
         messages && messages.map((message, index) => {
             if (message.type === "message") {
                 let Content;
@@ -70,27 +72,44 @@ const MessagesList = ({ initMessages, messages }) => {
                         </MessageContainer>
                     )
                 }
+                // somebody is typping
+            } else if (message.type === "typing" && (!withoutTyping)) {
+                if (message.author !== user.name) {
+                    return (
+
+                        <MessageContainer gray>
+                            <Message>
+                                <MessageTypping style={{ backgroundColor: message.chatColor }} gray><span>{message.author} is typing...</span></MessageTypping>
+                            </Message>
+                        </MessageContainer>
+                    )
+                }
             }
-            // to do: is typing..
         }));
 
     //Wiadomości napisane przed dolączniem użytkownika.
-    const LatestMess = useMemo(() => (
-        renderMessages(initMessages)
+    const LatestMessages = useMemo(() => (
+        renderMessages(initMessages, true)
     ), [initMessages]);
 
 
     const RenderedMessages = useMemo(() => (
-        renderMessages(messages)
+        renderMessages(messages, true)
     ), [messages]);
+
+
+    const TypingMessages = useMemo(() => (
+        renderMessages(typingMessages, false)
+    ), [typingMessages])
 
     return (
         <React.Fragment>
-            {LatestMess}
-            {LatestMess.length > 1 ? <Line>
+            {LatestMessages}
+            {LatestMessages.length > 1 ? <Line>
                 <TitleThin small>Chat messages above has been written before you joined the room</TitleThin>
             </Line> : null}
             {RenderedMessages}
+            {TypingMessages}
         </React.Fragment>
     )
 

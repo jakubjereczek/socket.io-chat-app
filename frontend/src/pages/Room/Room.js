@@ -22,12 +22,15 @@ const Room = () => {
     const [data, setData] = useState(undefined);
     const [messages, setMessages] = useState([]);
     const [lastestMessages, setLatestMessanges] = useState([]);
+    const [typingMessages, setTypingMessages] = useState([]);
 
     const [isLoading, setIsLoading] = useState(true);
     const [isMessagesLoading, setMessagesLoading] = useState(false);
     const [buttonIsActive, setButtonIsActive] = useState(true);
     const [userIsReadingMessagesAbove, setuserIsReadingMessagesAbove] = useState(false);
     const [emojiContainerVisible, setEmojiContainerVisible] = useState(false);
+    const [userIsTyping, setUserIsTyping] = useState(false);
+    const [userTapingRequest, setUserTapingRequest] = useState(false);
 
     const textBoxValue = React.createRef();
     const scroll = useRef();
@@ -73,10 +76,48 @@ const Room = () => {
         }
     }
 
-    const addNewMessageResponse = (type, message, userName, chatColor, time) => {
-        if (!isMessagesLoading) {
-            setMessagesLoading(true);
+    // Rozwiazanie problemu z hook useState.
+    // Ciagle pobieralismy dane z closure.
+    // Odswiezamy dane uzywajac useRef + useEffect.
+    // https://stackoverflow.com/questions/55154186/react-hooks-usestateuseeffectevent-gives-stale-state?answertab=oldest#tab-top
+    const typingMessagesLatestValue = useRef(typingMessages);
+    useEffect(() => {
+        typingMessagesLatestValue.current = typingMessages;
+    });
 
+    const addNewMessageResponse = (type, message, userName, chatColor, time) => {
+
+        console.log({
+            type,
+            message,
+            userName,
+            chatColor,
+            time
+        });
+
+        // Usunięcie wiadomości typing, ktora spowowala akcje usuniecia.
+        if (type === "refresh") {
+            setMessagesLoading(true);
+            let typingMessagesCopy = typingMessagesLatestValue.current;
+
+            typingMessagesCopy = typingMessagesCopy.filter(message => {
+                console.log(userName, message.author);
+
+                if (message.author === userName && message.type === "typing") {
+                    return false;
+                }
+                return true;
+            })
+            console.log('PO REFRESHU ' + typingMessagesCopy);
+            setTypingMessages(typingMessagesCopy);
+            setMessagesLoading(false);
+
+            // Dodanie wiadomosci typing
+        } else if (type === "typing") {
+            let typingMessagesCopy = typingMessagesLatestValue.current; // Nie odsiweza gowno niewiem czemu
+
+
+            setMessagesLoading(true);
             const newMessage = {
                 author: userName,
                 type,
@@ -84,10 +125,60 @@ const Room = () => {
                 chatColor,
                 time
             }
-            const messagesCopy = messages;
-            messagesCopy.push(newMessage);
-            setMessages(messagesCopy);
+            typingMessagesCopy.push(newMessage);
+            setTypingMessages(typingMessagesCopy);
             setMessagesLoading(false);
+        } else {
+            // Reszta wiadomosci.
+            if (!isMessagesLoading) {
+                // Wiadomosc wyslana, a wiec nie pisze.
+                // setUserIsTyping(false);
+                setMessagesLoading(true);
+
+                const newMessage = {
+                    author: userName,
+                    type,
+                    message,
+                    chatColor,
+                    time
+                }
+                const messagesCopy = messages;
+                messagesCopy.push(newMessage);
+                setMessages(messagesCopy);
+                setMessagesLoading(false);
+            }
+        }
+    };
+
+    let timer;
+    const typingMessageHandler = () => {
+        if (textBoxValue && textBoxValue.current.value.length > 6) { //
+            setUserIsTyping(true);
+            clearTimeout(timer);
+
+            timeout(userIsTyping);
+            console.log('true');
+        } else {
+            setUserIsTyping(false);
+        }
+    }
+
+    const timeout = (bool) => {
+
+        if (!userTapingRequest) {
+            // Wysłanie requestu z wiadomością o tym, ze użytkownik pisze.
+            socket.emit('rooms:send-message', "typing", "is typing", user.name, user.room, user.chatColor, Date.now());
+        }
+        setUserTapingRequest(true);
+        if (userIsTyping) {
+            timer = setTimeout(() => {
+                console.log('false');
+                setUserIsTyping(bool);
+                setUserTapingRequest(false); // Po czasie - nieprzerwane 3 sekundy bez dodania nowego tekstu.
+
+                // Wysłanie request o usunięcie wiadomości, ze użytkownik pisze.
+                socket.emit('rooms:delete-message', "typing", user.name, user.room);
+            }, 4000)
         }
     };
 
@@ -97,6 +188,12 @@ const Room = () => {
             return toast.warn("🦄 Message should have 6 chars or more!");
         }
 
+        // Sprawdzenie czy istenije wiadomosc isTyppping i usuniecie gdy jest.
+        socket.emit('rooms:delete-message', "typing", user.name, user.room);
+
+
+
+
         setButtonIsActive(false);
         socket.emit('rooms:send-message', "message", value, user.name, user.room, user.chatColor, Date.now());
         textBoxValue.current.value = ""
@@ -105,6 +202,34 @@ const Room = () => {
         }, [300]) // 0.3 sek przerwy przed nastepna wiadomoscia
     }
 
+
+    // useEffect(() => {
+    //     console.log('SOMEBODY IS TYPING ' + userIsTyping);
+
+    // }, [setUserIsTyping])
+
+    // jeśli jest rowny false to usuwamy msg
+
+    // 1. sprawdzam czy wiadomosc istnieje
+    // 2. usuwam ja z db
+
+    // jesli jest true to wysylamy message
+    // 1. wysylam wiadomosc do bazdy
+    //f (userIsTyping) {
+    // console.log('wysylam req typing');
+    //} else {
+    // // sprawdzam czy wiadomosc istnieje
+    // console.log('nie istnieje sprawdzam');
+    // let exist = false;
+    // typingMessages.forEach(message => {
+    //     if (message.type === "typing" && message.author === user.name) {
+    //         exist = true;
+    //     }
+    // })
+    // if (exist) {
+    //     console.log('request usuniecia');
+    //     socket.emit('rooms:delete-message', "typing", user.name, user.room);
+    // }
     const exitRoom = () => {
         const newUser = {
             ...user,
@@ -117,10 +242,10 @@ const Room = () => {
     }
 
     const MessagesListComponent = (
-        (messages && lastestMessages) ?
+        (messages && lastestMessages && typingMessages) ?
             (
                 // Regenerownanie w przypadku pojawienia sie nowej wiadmosci
-                !isMessagesLoading && <MessagesList initMessages={lastestMessages} messages={messages} />
+                !isMessagesLoading && <MessagesList initMessages={lastestMessages} messages={messages} typingMessages={typingMessages} />
             ) :
             (
                 <h2>Data is loading...</h2>
@@ -178,7 +303,7 @@ const Room = () => {
                 <Border />
                 <InputContainer>
                     <div>
-                        <Textarea ref={textBoxValue} value={textBoxValue.current} />
+                        <Textarea onChange={typingMessageHandler} ref={textBoxValue} value={textBoxValue.current} />
                         <EmojiIcon onClick={toggleEmojiContainer} />
                     </div>
                     <div>

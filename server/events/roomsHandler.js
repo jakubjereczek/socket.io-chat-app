@@ -136,11 +136,29 @@ module.exports = (io, socket) => {
             chatColor,
             time
         }
+        console.log(newMessage);
         let findedRoom = data.getRoom(roomName, data.rooms);
         findedRoom.messages.push(newMessage);
         if (findedRoom) {
             io.to(findedRoom.id).emit('rooms:get-sent-message', type, message, user, chatColor, time);
         }
+    }
+
+    // Usunięcie waidomości typing.
+    const rooms_delete_message = (type, user, roomName) => {
+        let findedRoom = data.getRoom(roomName, data.rooms);
+
+        if (findedRoom) {
+            const findedMessage = findedRoom.messages.find(message => message.author === user && message.type === type);
+
+            if (findedMessage) {
+                findedRoom.messages = findedRoom.messages.filter(message => message !== findedMessage);
+
+                io.to(findedRoom.id).emit('rooms:get-sent-message', "refresh", null, user, null, null);
+                console.log('Wiadomosc zostala usunieta.');
+            }
+        }
+
     }
 
     const rooms_get_sent_message_req = (id) => {
@@ -156,7 +174,7 @@ module.exports = (io, socket) => {
     socket.on("rooms:refresh-rooms-request", rooms_refesh_rooms_req);
     socket.on("rooms:get-room-request", rooms_get_rooms_req)
     socket.on("rooms:send-message", rooms_send_message)
-
+    socket.on("rooms:delete-message", rooms_delete_message)
     socket.on("rooms:get-sent-messages-request", rooms_get_sent_message_req)
 
 }
