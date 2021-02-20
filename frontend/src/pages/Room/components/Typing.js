@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react';
 
 import { Textarea } from 'components/Styles.css'
+import { toast } from 'react-toastify';
 
-const Typing = ({ textBoxValue, user, socket }) => {
+import { SendButton, SendIcon, EmojiIcon } from '../Room.css';
+
+const Typing = ({ textBoxValue, user, socket, toggleEmojiContainer }) => {
+
+    const [buttonIsActive, setButtonIsActive] = useState(true);
 
     const [userTapingRequest, setUserTapingRequest] = useState(false);
     const [userIsTyping, setUserIsTyping] = useState(false);
@@ -35,12 +40,45 @@ const Typing = ({ textBoxValue, user, socket }) => {
 
                 // Wysłanie request o usunięcie wiadomości, ze użytkownik pisze.
                 socket.emit('rooms:delete-message', "typing", user.name, user.room);
-            }, 4000));
+            }, 2000));
         }
     };
 
+
+    const sendNewMessageRequest = () => {
+        const value = textBoxValue.current.value;
+        if (value.length < 6) {
+            return toast.warn("🦄 Message should have 6 chars or more!");
+        }
+        textBoxValue.current.value = ""
+
+        // Usuniecie typing - przed wyświetleniem wiadomosci.
+        if (userIsTyping) {
+            clearTimeout(timer);
+            setUserTapingRequest(false);
+            socket.emit('rooms:delete-message', "typing", user.name, user.room);
+        }
+        socket.emit('rooms:send-message', "message", value, user.name, user.room, user.chatColor, Date.now());
+
+
+        setButtonIsActive(false);
+        setTimeout(() => {
+            setButtonIsActive(true);
+        }, [200]) // 0.2 sek przerwy przed nastepna wiadomoscia 
+
+    }
+
     return (
-        <Textarea onChange={typingMessageHandler} ref={textBoxValue} />
+        <React.Fragment>
+            <div>
+                <Textarea onChange={typingMessageHandler} ref={textBoxValue} />
+                <EmojiIcon onClick={toggleEmojiContainer} />
+            </div>
+            <div>
+                <SendButton disabled={!buttonIsActive} onClick={sendNewMessageRequest}><SendIcon /></SendButton>
+            </div>
+        </React.Fragment>
+
     );
 }
 

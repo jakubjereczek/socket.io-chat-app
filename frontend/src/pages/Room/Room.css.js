@@ -6,6 +6,7 @@ import emoji_icon from './images/emoji_icon.png';
 import human from './images/human.png';
 
 export const Wrapper = styled.div`
+    position: relative;
     height: 100%;
     max-height: 100vh;
     min-width: 300px;
@@ -62,10 +63,17 @@ export const ExitIcon = styled.div`
 
 
 export const Border = styled.div`
-    height: 4px;
+    position: absolute;
+
+    min-height: 4px;
+    height: auto;
     width: 100%;
     background-color: ${props => props.theme.dark_light};
     box-shadow: 3px 3px 15px 2px rgba(128,128,128,0.25);
+    z-index: 2;
+    transform: translateX(0vw);
+    transition: all 2s ease;
+
 `
 
 export const Containter = styled.div`
@@ -78,7 +86,13 @@ export const MessageContainer = styled.div`
     display: flex;
     width: 100%;
     justify-content: ${props => props.gray ? "flex-end" : "flex-start"};
+    transition: 1s;
 `;
+
+export const TypingMessageContainer = styled(MessageContainer)`
+    /* position: absolute; */
+
+`
 
 export const Message = styled.div`
     display: flex;
@@ -147,29 +161,28 @@ export const MessageText = styled.div`
 `
 
 export const MessageTypping = styled(MessageText)`
+    overflow: hidden;
 
-overflow: hidden;
+    & > span {
+        animation: move 4s linear infinite;
 
-& > span {
-    animation: move 4s linear infinite;
+        @keyframes move {
+            0% {
+                opacity: 0.15;
+                transform: scale(1);
+            }
 
-    @keyframes move {
-        0% {
-            opacity: 0.15;
-            transform: scale(1);
+            50% {
+                opacity: 1;
+                transform: scale(1.03);
+            }
+
+            100% {
+                opacity: 0.15;
+                transform: scale(1);
+
+            }
         }
-
-        50% {
-            opacity: 1;
-            transform: scale(1.03);
-        }
-
-        100% {
-            opacity: 0.15;
-            transform: scale(1);
-
-        }
-    }
 
 `;
 

@@ -11,6 +11,8 @@ import MessagesList from './components/MessagesList';
 import EmojiContainer from './components/EmojiContainer';
 import ActiveUsers from './components/ActiveUsers';
 import Typing from './components/Typing';
+import TypingMessages from './components/TypingMessages';
+
 
 
 const Room = () => {
@@ -27,6 +29,8 @@ const Room = () => {
 
     const [isLoading, setIsLoading] = useState(true);
     const [isMessagesLoading, setMessagesLoading] = useState(false);
+    const [isTypingMessagesLoading, setTypingMessagesLoading] = useState(false);
+
     const [buttonIsActive, setButtonIsActive] = useState(true);
     const [userIsReadingMessagesAbove, setuserIsReadingMessagesAbove] = useState(false);
     const [emojiContainerVisible, setEmojiContainerVisible] = useState(false);
@@ -96,7 +100,7 @@ const Room = () => {
             time
         }
         if (type === "refresh") {
-            setMessagesLoading(true);
+            setTypingMessagesLoading(true);
             typingMessagesCopy = typingMessagesCopy.filter(message => {
                 console.log(userName, message.author);
                 if (message.author === userName && message.type === "typing") {
@@ -105,7 +109,7 @@ const Room = () => {
                 return true;
             })
             setTypingMessages(typingMessagesCopy);
-            setMessagesLoading(false);
+            setTypingMessagesLoading(false);
             // Dodanie message typing.
         } else if (type === "typing") {
             setMessagesLoading(true);
@@ -124,23 +128,6 @@ const Room = () => {
         }
     };
 
-    const sendNewMessageRequest = () => {
-        const value = textBoxValue.current.value;
-        if (value.length < 6) {
-            return toast.warn("🦄 Message should have 6 chars or more!");
-        }
-
-        // Sprawdzenie czy istnieje wiadomosc "type: typing:" i usuniecie jej gdy takowa istnieje.
-        socket.emit('rooms:delete-message', "typing", user.name, user.room);
-
-        setButtonIsActive(false);
-        socket.emit('rooms:send-message', "message", value, user.name, user.room, user.chatColor, Date.now());
-        textBoxValue.current.value = ""
-        setTimeout(() => {
-            setButtonIsActive(true);
-        }, [300]) // 0.3 sek przerwy przed nastepna wiadomoscia
-    }
-
     const exitRoom = () => {
         const newUser = {
             ...user,
@@ -153,14 +140,11 @@ const Room = () => {
     }
 
     const MessagesListComponent = (
-        (messages && lastestMessages && typingMessages) ?
-            (
-                // Regenerownanie w przypadku pojawienia sie nowej wiadmosci
-                !isMessagesLoading && <MessagesList initMessages={lastestMessages} messages={messages} typingMessages={typingMessages} />
-            ) :
-            (
-                <h2>Data is loading...</h2>
-            )
+        !isMessagesLoading && <MessagesList initMessages={lastestMessages} messages={messages} />
+    )
+
+    const TypingMessagesComponent = (
+        !isTypingMessagesLoading && <TypingMessages typingMessages={typingMessages} />
     )
 
     const EmojiContainerComponent = useMemo(() => (
@@ -170,7 +154,7 @@ const Room = () => {
     ), [textBoxValue, emojiContainerVisible])
 
     const TypingComponent = useMemo(() => (
-        <Typing textBoxValue={textBoxValue} user={user} socket={socket} />
+        <Typing textBoxValue={textBoxValue} user={user} socket={socket} toggleEmojiContainer={toggleEmojiContainer} />
     ), [textBoxValue]);
 
 
@@ -178,6 +162,7 @@ const Room = () => {
         // Scrollowanie od ostatniej wiadomosci.
         if (!userIsReadingMessagesAbove) {
             scroll.current && scroll.current.scrollIntoView({ behavior: "auto" }) // przejdzie do ostatniej wiadomosci
+
         }
     }, [MessagesListComponent]);
 
@@ -193,7 +178,7 @@ const Room = () => {
 
     return (
         (!isLoading &&
-            <Wrapper>
+            < Wrapper >
                 <Header>
                     <div>
                         <div>
@@ -210,20 +195,16 @@ const Room = () => {
                         <ExitIcon />
                     </div>
                 </Header>
-                <Border />
+                <Border absolute>
+                    {TypingMessagesComponent}
+                </Border>
                 <Containter ref={container} onScroll={scrollManager}>
                     {MessagesListComponent}
                     <ScrollHiddenElement ref={scroll}>last</ScrollHiddenElement>
                 </Containter>
                 <Border />
                 <InputContainer>
-                    <div>
-                        {TypingComponent}
-                        <EmojiIcon onClick={toggleEmojiContainer} />
-                    </div>
-                    <div>
-                        <SendButton disabled={!buttonIsActive} onClick={sendNewMessageRequest}><SendIcon /></SendButton>
-                    </div>
+                    {TypingComponent}
                 </InputContainer>
                 {EmojiContainerComponent}
             </Wrapper >

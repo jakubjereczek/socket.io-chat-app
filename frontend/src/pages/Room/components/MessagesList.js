@@ -72,18 +72,6 @@ const MessagesList = ({ initMessages, messages, typingMessages }) => {
                         </MessageContainer>
                     )
                 }
-                // somebody is typping
-            } else if (message.type === "typing" && (!withoutTyping)) {
-                if (message.author !== user.name) {
-                    return (
-
-                        <MessageContainer gray>
-                            <Message>
-                                <MessageTypping style={{ backgroundColor: message.chatColor }} gray><span>{message.author} is typing...</span></MessageTypping>
-                            </Message>
-                        </MessageContainer>
-                    )
-                }
             }
         }));
 
@@ -97,11 +85,6 @@ const MessagesList = ({ initMessages, messages, typingMessages }) => {
         renderMessages(messages, true)
     ), [messages]);
 
-
-    const TypingMessages = useMemo(() => (
-        renderMessages(typingMessages, false)
-    ), [typingMessages])
-
     return (
         <React.Fragment>
             {LatestMessages}
@@ -109,7 +92,6 @@ const MessagesList = ({ initMessages, messages, typingMessages }) => {
                 <TitleThin small>Chat messages above has been written before you joined the room</TitleThin>
             </Line> : null}
             {RenderedMessages}
-            {TypingMessages}
         </React.Fragment>
     )
 
