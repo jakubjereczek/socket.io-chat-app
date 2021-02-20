@@ -184,7 +184,8 @@ export const MessageTypping = styled(MessageText)`
             }
         }
 
-`;
+    }
+`
 
 
 export const MessageTriangle = styled.div`

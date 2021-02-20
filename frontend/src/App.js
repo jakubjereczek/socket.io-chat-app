@@ -16,7 +16,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { MainWrapper } from './components/Styles.css'
 
 import { Popup } from './components';
-import { Room, Main } from './pages';
+import { Room, Main, NotFound } from './pages';
 
 toast.configure();
 
@@ -58,10 +58,7 @@ function App() {
                 </MainWrapper>
               </Route>
               <Route>
-                <MainWrapper>
-                  Page not found
-                  {/* to do: page */}
-                </MainWrapper>
+                <NotFound />
               </Route>
             </Switch>
           </Router>
