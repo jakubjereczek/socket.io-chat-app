@@ -19,7 +19,6 @@ const Typing = ({ textBoxValue, user, socket, toggleEmojiContainer }) => {
             clearTimeout(timer);
             setUserIsTyping(true);
             timeout(userIsTyping);
-            console.log('true');
         } else {
             setUserIsTyping(false);
         }
@@ -40,7 +39,7 @@ const Typing = ({ textBoxValue, user, socket, toggleEmojiContainer }) => {
 
                 // Wysłanie request o usunięcie wiadomości, ze użytkownik pisze.
                 socket.emit('rooms:delete-message', "typing", user.name, user.room);
-            }, 2000));
+            }, 4000));
         }
     };
 
@@ -59,7 +58,6 @@ const Typing = ({ textBoxValue, user, socket, toggleEmojiContainer }) => {
             socket.emit('rooms:delete-message', "typing", user.name, user.room);
         }
         socket.emit('rooms:send-message', "message", value, user.name, user.room, user.chatColor, Date.now());
-
 
         setButtonIsActive(false);
         setTimeout(() => {

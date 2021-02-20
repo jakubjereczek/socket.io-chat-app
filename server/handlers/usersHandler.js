@@ -9,8 +9,6 @@ module.exports = (io, socket) => {
             room,
             chatColor
         }
-        // todo: sprawdzanie czy istnieje, jesli nie to nie to wysylamy emit, ale w przypadku skorzystania z mongodb by nie powielać
-        // sprawdzenie czy user o tym nicku istnieje
         let exist = false;
         data.users.forEach(u => {
             if (u.name === name) {
@@ -28,7 +26,6 @@ module.exports = (io, socket) => {
         }
     }
 
-    // Funkcja odwoluje sie do rozłaczenia się uzytkownika.
     const users_disconnect = () => {
         const socketId = socket.id;
         const usersCopy = data.users;

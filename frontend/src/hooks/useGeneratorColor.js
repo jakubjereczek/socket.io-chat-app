@@ -15,7 +15,6 @@ export default function useGeneratorColor() {
             rgb.push(random);
         }
         rgb.forEach(element => {
-            console.log(element);
             let hex = element.toString(16);
             if (hex.length === 1) {
                 hex = '0' + hex

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useHistory } from "react-router-dom";
 
-import { Wrapper, Header, Containter, InputContainer, ScrollHiddenElement, Border, Online, ExitIcon, SendButton, SendIcon, EmojiIcon } from './Room.css';
-import { TitleThin, Textarea } from 'components/Styles.css'
+import { Wrapper, Header, Containter, InputContainer, ScrollHiddenElement, Border, Online, ExitIcon } from './Room.css';
+import { TitleThin } from 'components/Styles.css'
 
 import { toast } from 'react-toastify';
 import { useSocket } from 'contexts/SocketContext';
@@ -13,13 +13,13 @@ import ActiveUsers from './components/ActiveUsers';
 import Typing from './components/Typing';
 import TypingMessages from './components/TypingMessages';
 
-
-
 const Room = () => {
     const socketContext = useSocket();
+
     const socket = socketContext.socket;
     const user = socketContext.user;
     const history = useHistory();
+
     let { id } = useParams();
 
     const [data, setData] = useState(undefined);
@@ -30,14 +30,12 @@ const Room = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isMessagesLoading, setMessagesLoading] = useState(false);
     const [isTypingMessagesLoading, setTypingMessagesLoading] = useState(false);
-
-    const [buttonIsActive, setButtonIsActive] = useState(true);
     const [userIsReadingMessagesAbove, setuserIsReadingMessagesAbove] = useState(false);
     const [emojiContainerVisible, setEmojiContainerVisible] = useState(false);
 
     const textBoxValue = React.createRef();
-    const scroll = useRef();
-    const container = useRef();
+    const scrollElementRef = useRef();
+    const containerElementRef = useRef();
 
     const toggleEmojiContainer = () => setEmojiContainerVisible(!emojiContainerVisible);
 
@@ -50,7 +48,6 @@ const Room = () => {
     const handleMessageList = useCallback((messages) => {
         // inicjalizacja wiadomosci, ktore zostały napisane przed dołączniem 
         setLatestMessanges(messages);
-        // setIsLoading(false);
     }, []);
 
 
@@ -70,19 +67,15 @@ const Room = () => {
         }
     }, [])
 
-    const scrollManager = () => {
-        if (scroll.current.getBoundingClientRect().y - container.current.getBoundingClientRect().height > 100) {
-            // ok. 100 px nad ostatnią wiadomoscia - wtedy nie scrollować automatycznie wiadomosci
-            setuserIsReadingMessagesAbove(true);
-        } else {
-            setuserIsReadingMessagesAbove(false);
-        }
+    const scrollAboveController = () => {
+        const condition = scrollElementRef.current.getBoundingClientRect().y - containerElementRef.current.getBoundingClientRect().height > 100;
+        // ok. 100 px nad ostatnią wiadomoscia - wtedy nie scrollować automatycznie wiadomosci
+
+        condition ? setuserIsReadingMessagesAbove(true) : setuserIsReadingMessagesAbove(false);
     }
 
-    // Rozwiazanie problemu z hook useState.
-    // Ciagle pobieralismy dane z closure.
-    // Odswiezamy dane uzywajac useRef + useEffect.
-    // https://stackoverflow.com/questions/55154186/react-hooks-usestateuseeffectevent-gives-stale-state?answertab=oldest#tab-top
+    // Rozwiąanie problemu z pobieraniem starej wartości z domkniecia (closure).
+    // useRef + useEffect.
     const typingMessagesLatestValue = useRef(typingMessages);
     useEffect(() => {
         typingMessagesLatestValue.current = typingMessages;
@@ -99,33 +92,37 @@ const Room = () => {
             chatColor,
             time
         }
-        if (type === "refresh") {
-            setTypingMessagesLoading(true);
-            typingMessagesCopy = typingMessagesCopy.filter(message => {
-                console.log(userName, message.author);
-                if (message.author === userName && message.type === "typing") {
-                    return false;
-                }
-                return true;
-            })
-            setTypingMessages(typingMessagesCopy);
-            setTypingMessagesLoading(false);
-            // Dodanie message typing.
-        } else if (type === "typing") {
-            setMessagesLoading(true);
-            typingMessagesCopy.push(newMessage);
-            setTypingMessages(typingMessagesCopy);
-            setMessagesLoading(false);
-        } else {
-            // Reszta wiadomosci.
-            if (!isMessagesLoading) {
+
+        switch (type) {
+            // Gdy usuwamy wiadomość (typing).
+            case 'refresh':
+                setTypingMessagesLoading(true);
+                typingMessagesCopy = typingMessagesCopy.filter(message => {
+                    console.log(userName, message.author);
+                    if (message.author === userName && message.type === "typing") {
+                        return false;
+                    }
+                    return true;
+                })
+                setTypingMessages(typingMessagesCopy);
+                setTypingMessagesLoading(false);
+                break;
+            // Gdy dodajemy wiadomość (typing).
+            case 'typing':
+                setTypingMessagesLoading(true);
+                typingMessagesCopy.push(newMessage);
+                setTypingMessages(typingMessagesCopy);
+                setTypingMessagesLoading(false);
+                break;
+            case 'message':
                 setMessagesLoading(true);
                 const messagesCopy = messages;
                 messagesCopy.push(newMessage);
                 setMessages(messagesCopy);
                 setMessagesLoading(false);
-            }
+                break;
         }
+
     };
 
     const exitRoom = () => {
@@ -161,8 +158,9 @@ const Room = () => {
     useEffect(() => {
         // Scrollowanie od ostatniej wiadomosci.
         if (!userIsReadingMessagesAbove) {
-            scroll.current && scroll.current.scrollIntoView({ behavior: "auto" }) // przejdzie do ostatniej wiadomosci
-
+            setTimeout(() => {
+                scrollElementRef.current && scrollElementRef.current.scrollIntoView({ behavior: "auto" }) // przejdzie do ostatniej wiadomosci
+            }, 100)
         }
     }, [MessagesListComponent]);
 
@@ -182,25 +180,21 @@ const Room = () => {
                 <Header>
                     <div>
                         <div>
-                            {data && (
-                                <React.Fragment>
-                                    <TitleThin><span>{data.name}</span></TitleThin>
-                                    <TitleThin small><Online /> <ActiveUsers users={data.users} />
-                                    </TitleThin>
-                                </React.Fragment>
-                            )}
+                            <TitleThin><span>{data.name}</span></TitleThin>
+                            <TitleThin small><Online /> <ActiveUsers users={data.users} />
+                            </TitleThin>
                         </div>
                     </div>
                     <div onClick={exitRoom}>
                         <ExitIcon />
                     </div>
                 </Header>
-                <Border absolute>
+                <Border>
                     {TypingMessagesComponent}
                 </Border>
-                <Containter ref={container} onScroll={scrollManager}>
+                <Containter ref={containerElementRef} onScroll={scrollAboveController}>
                     {MessagesListComponent}
-                    <ScrollHiddenElement ref={scroll}>last</ScrollHiddenElement>
+                    <ScrollHiddenElement ref={scrollElementRef}>last</ScrollHiddenElement>
                 </Containter>
                 <Border />
                 <InputContainer>

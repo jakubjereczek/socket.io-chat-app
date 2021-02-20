@@ -1,6 +1,5 @@
 const app = require('./app');
 const port = process.env.port || 80;
-const data = require('./data');
 
 const server = require('http').createServer(app);
 const options = {

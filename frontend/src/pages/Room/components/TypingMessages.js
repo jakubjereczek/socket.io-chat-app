@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { TypingMessageContainer, Message, MessageTypping, MessageIcon } from '../Room.css'
 
@@ -10,7 +10,7 @@ const TypingMessages = ({ typingMessages }) => {
     const user = socketContext.user;
 
     const renderMessages = (messages) => (
-        messages && messages.map((message, index) => {
+        messages && messages.map((message) => {
             if (message.author !== user.name) {
                 return (
                     <TypingMessageContainer gray>

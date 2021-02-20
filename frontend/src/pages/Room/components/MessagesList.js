@@ -9,13 +9,8 @@ import timeConverter from 'utils/timeConverter';
 
 const MessagesList = ({ initMessages, messages, typingMessages }) => {
 
-    // console.log("init", initMessages);
-    // console.log("mess", messages);
-
     const socketContext = useSocket();
     const user = socketContext.user;
-
-    //console.log('typingMessages', typingMessages);
 
     const renderMessages = (messages, withoutTyping) => (
         messages && messages.map((message, index) => {

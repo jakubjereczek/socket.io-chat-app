@@ -16,15 +16,13 @@ module.exports = (io, socket) => {
             users,
             messages: []
         }
-        console.log("room", room);
         const findedUser = data.getUser(userId, usersCopy);
         if (findedUser && findedUser.room) {
             return;
         }
 
         data.rooms.push(room);
-        socket.emit('rooms:create-success', room);
-        // Nie robię tutaj globalnego refresha ponieważ jest w join.
+        socket.emit('rooms:create-success', room); // Nie robię tutaj globalnego refresha ponieważ jest w join.
     }
 
     const rooms_join = (id, userId) => {
@@ -48,7 +46,6 @@ module.exports = (io, socket) => {
         }
         data.rooms = roomsCopy;
         socket.join(id)
-        console.log('socket join to room');
 
         // informacja o wejsciu do kanalu
         const time = Date.now();
@@ -95,7 +92,6 @@ module.exports = (io, socket) => {
                 data.rooms = roomsCopy;
             }
         }
-        console.log('socket leave the room');
         // odswiezam liste online dla reszty uczestnikow chatu
         io.to(findedRoom.id).emit('rooms:get-rooms', findedRoom);
 
@@ -118,7 +114,6 @@ module.exports = (io, socket) => {
     }
 
     const rooms_refesh_rooms_req = () => socket.emit('rooms:refresh-rooms', data.rooms); // refresh dla pojedynczego socketu
-
 
     const rooms_get_rooms_req = (id) => {
         let findedRoom = data.getRoom(id, data.rooms);
@@ -155,7 +150,6 @@ module.exports = (io, socket) => {
                 findedRoom.messages = findedRoom.messages.filter(message => message !== findedMessage);
 
                 io.to(findedRoom.id).emit('rooms:get-sent-message', "refresh", null, user, null, null);
-                console.log('Wiadomosc zostala usunieta.');
             }
         }
 

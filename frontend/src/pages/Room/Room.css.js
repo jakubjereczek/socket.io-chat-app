@@ -211,7 +211,7 @@ export const Author = styled.p`
 export const InputContainer = styled.div`
     position: relative;
     display: flex;
-    height: calc(30% - 110px);
+    height: calc(30% - 100px);
     background-color: #F6F6F6;
     padding: 0px 10px;
     justify-items: center;
@@ -298,7 +298,7 @@ export const ScrollHiddenElement = styled.div`
 export const EmojiContainer = styled.div`
     position: absolute;
     z-index: 1;
-    top: calc(100% - 408px);
+    top: calc(100% - 420px);
     left: calc(100% - 310px);
 `;
 

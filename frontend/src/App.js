@@ -6,7 +6,6 @@ import {
   Route
 } from "react-router-dom";
 
-// import { io } from "socket.io-client";
 import { ThemeProvider } from "styled-components";
 import { IconContext } from "react-icons"
 
@@ -16,16 +15,13 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { MainWrapper } from './components/Styles.css'
 
-import { Name, Profil, RoomsList, Popup } from './components';
+import { Popup } from './components';
 import { Room, Main } from './pages';
-// import { useSocket } from './contexts/SocketContext';
 
 toast.configure();
 
 function App() {
 
-  // const socketContext = useSocket();
-  // const user = socketContext.user;
 
   const [isActivePopup, setIsActivePopup] = useState(false);
   const [popupContent, setPopupContent] = useState({
@@ -62,8 +58,10 @@ function App() {
                 </MainWrapper>
               </Route>
               <Route>
-                {/* to do */}
-                Not found
+                <MainWrapper>
+                  Page not found
+                  {/* to do: page */}
+                </MainWrapper>
               </Route>
             </Switch>
           </Router>

@@ -14,7 +14,6 @@ export default function useGeneratorId() {
             generatedId += char;
         }
         setId(generatedId);
-        console.log('Wygenerowane id: ' + generatedId);
     }, []);
 
     return id;
