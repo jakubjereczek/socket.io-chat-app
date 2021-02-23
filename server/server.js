@@ -22,13 +22,16 @@ app.use(bodyParser.json())
 const registerRoomsHandlers = require('./handlers/roomsHandler');
 const registerUsersHandlers = require('./handlers/usersHandler');
 
+const authSocket = require('./middlewares/auth');
+
 const onConnection = (socket) => {
     registerRoomsHandlers(io, socket);
     registerUsersHandlers(io, socket);
     console.log(' %s sockets connected', io.engine.clientsCount);
 }
 
-io.on("connection", onConnection);
+io.use((socket, next) => authSocket(socket, next))
+    .on("connection", onConnection);
 
 const UsersRoute = require('./routes/users');
 
