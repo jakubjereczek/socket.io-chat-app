@@ -2,11 +2,6 @@ import React, { useContext, useState, useEffect } from 'react';
 
 import { io } from "socket.io-client";
 
-// to do tokeny w localStorage
-const token = null;
-const refreshToken = "tokena tokenb"
-
-
 const SocketContext = React.createContext(undefined);
 
 export const useSocket = () => {
@@ -17,9 +12,7 @@ export const SocketProvider = ({ children }) => {
 
     const options = {
         withCredentials: true,
-        transports: ['websocket', 'polling', 'flashsocket'],
-
-        query: { token, refreshToken }
+        transports: ['websocket', 'polling', 'flashsocket']
     };
 
     const [socket, setSocket] = useState();
