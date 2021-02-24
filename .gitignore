@@ -26,3 +26,5 @@ frontend/yarn-debug.log*
 frontend/yarn-error.log*
 
 nots.docx
+
+nodemon.json
