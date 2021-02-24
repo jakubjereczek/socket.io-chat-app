@@ -10,6 +10,7 @@ import { useGeneratorColor } from 'hooks';
 const Name = () => {
 
     const socketContext = useSocket();
+
     const socket = socketContext.socket;
 
     const [name, setName] = useState("");
