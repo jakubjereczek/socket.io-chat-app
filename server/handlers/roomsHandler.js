@@ -43,6 +43,8 @@ module.exports = (io, socket) => {
                     id: findedUser.id,
                     name: findedUser.name,
                 })
+        } else {
+            return;
         }
         data.rooms = roomsCopy;
         socket.join(id)
@@ -91,6 +93,8 @@ module.exports = (io, socket) => {
             } else {
                 data.rooms = roomsCopy;
             }
+        } else {
+            return;
         }
         // odswiezam liste online dla reszty uczestnikow chatu
         io.to(findedRoom.id).emit('rooms:get-rooms', findedRoom);
@@ -131,10 +135,10 @@ module.exports = (io, socket) => {
             chatColor,
             time
         }
-        console.log(newMessage);
         let findedRoom = data.getRoom(roomName, data.rooms);
-        findedRoom.messages.push(newMessage);
         if (findedRoom) {
+            findedRoom.messages.push(newMessage);
+
             io.to(findedRoom.id).emit('rooms:get-sent-message', type, message, user, chatColor, time);
         }
     }

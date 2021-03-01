@@ -1,18 +1,24 @@
-const app = require('./app');
-const port = process.env.port || 80;
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 80;
 
 const server = require('http').createServer(app);
 const options = {
     cors: {
-        origin: 'http://127.0.0.1:3000',
+        origin: 'https://socketio-chat-app-client.herokuapp.com:*',
         credentials: true
     }
 };
+
 const io = require('socket.io')(server, options);
+const bodyParser = require('body-parser')
+
+// middlewares
+app.use(bodyParser.json())
 
 // handlers
-const registerRoomsHandlers = require('./events/roomsHandler');
-const registerUsersHandlers = require('./events/usersHandler');
+const registerRoomsHandlers = require('./handlers/roomsHandler');
+const registerUsersHandlers = require('./handlers/usersHandler');
 
 const onConnection = (socket) => {
     registerRoomsHandlers(io, socket);
@@ -22,6 +28,7 @@ const onConnection = (socket) => {
 
 io.on("connection", onConnection);
 
-server.listen(port, "127.0.0.1", () => {
-    console.log(`Server is listening at http://127.0.0.1:${port}`)
+server.listen(PORT, err => {
+    if (err) throw err;
+    console.log(`Server is listening at ${PORT}`)
 });

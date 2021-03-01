@@ -19,7 +19,7 @@ export const SocketProvider = ({ children }) => {
     const [user, setUser] = useState();
 
     useEffect(() => {
-        const socket = io("http://127.0.0.1:80", options);
+        const socket = io("https://socketio-chat-appserver.herokuapp.com", options);
         console.log(socket);
         setSocket(socket);
 

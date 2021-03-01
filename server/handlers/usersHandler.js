@@ -12,7 +12,6 @@ module.exports = (io, socket) => {
         let exist = false;
         data.users.forEach(u => {
             if (u.name === name) {
-                console.log(u.name);
                 console.log(name);
                 exist = true;
                 return;
@@ -37,7 +36,6 @@ module.exports = (io, socket) => {
 
             // Usunięcie uzytkownika po rozłączeniu
             data.users = usersCopy.filter(user => user.id != socketId);
-            console.log(data.users);
 
             // Wykonuje się gdy użytkownik był w oknie chatu.
             if (roomId) {
@@ -68,7 +66,6 @@ module.exports = (io, socket) => {
                 // informacja o wyjsciu z kanalu
                 const time = Date.now();
                 io.to(findedRoom.id).emit('rooms:get-sent-message', "notification", "has  left room (closed browser)", findedUser.name, findedUser.chatColor, time);
-                console.log(findedUser);
                 const newMessage = {
                     author: findedUser.name,
                     type: "notification",
