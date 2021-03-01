@@ -35,5 +35,4 @@ https://socketio-chat-app-client.herokuapp.com/
 ## Screenshots
 A some screenshots from app
 ![Room list](./screenshot1.png)
-### Latest version 
 ![Chat desktop view](./screenshot2.png)
