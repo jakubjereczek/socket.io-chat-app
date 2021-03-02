@@ -1,22 +1,28 @@
 # socket.io-chat-app 
-Chat app using React.js and socket.io.
 
-## Table of contents
-* [General info](#general-info)
-* [Technologies](#technologies)
-* [Demo](#demo)
-* [Screenshots](#screenshots)
+#### Chat app using React.js and socket.io. 
+> Chat application with rooms.
 
+## 🔎 Demo
 
-## General info
-Chat application with rooms. 
+Click to test the app: https://socketio-chat-app-client.herokuapp.com/
+![Room list](./screenshot1.png)
+![Chat desktop view](./screenshot2.png)
+More in address above!
 
-The room can be made public and private (protected by a password).
-The user's account is temporary - it will be deleted when the user closes the browser tab.
-The application displays a notification in real time that the user is writing a message and, if it is sent, refreshes all users messages list present on the channel. If the room is empty - it is automatically deleted.
+## 📚 Features
+- A user account is exist only when he is connect (block connect someobody with the same name),
+- Rooms (private - protected by password and public),
+- Random chat color for every user (generated on join),
+- Typing notifications (real time - when user is writting a message),
+- Refresh channels and users list real time,
+- Room is empty = it'll be delete,
+- Display messages list had written before user join to the room,
+- Chat emoticons
 
-## Technologies
-#### Client
+## 🕹️ Technologies
+
+### Client
 - react framework 16.8^,
 - socket.io client,
 - react router,
@@ -24,15 +30,8 @@ The application displays a notification in real time that the user is writing a 
 - toastify,
 - styled-components
 
-#### Server
+####Server
 - node.js,
 - express.js,
 - socket.io
 
-## Demo
-https://socketio-chat-app-client.herokuapp.com/
-
-## Screenshots
-A some screenshots from app
-![Room list](./screenshot1.png)
-![Chat desktop view](./screenshot2.png)
