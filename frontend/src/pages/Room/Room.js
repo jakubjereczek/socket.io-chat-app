@@ -115,6 +115,7 @@ const Room = () => {
                 setTypingMessagesLoading(false);
                 break;
             case 'message':
+            case 'notification':
                 setMessagesLoading(true);
                 const messagesCopy = messages;
                 messagesCopy.push(newMessage);
